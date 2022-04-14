@@ -26,4 +26,9 @@ public class HandleUpdateService : IHandleUpdateService
     {
         await _botClient.SendTextMessageAsync(update.Message.Chat.Id, "Hello, this is Anton's function!");
     }
+
+    public async Task SayHelloFromArtyom(Update update)
+    {
+        await _botClient.SendTextMessageAsync(update.Message.Chat.Id, "Hello, this is Artyom's function!");
+    }
 }
