@@ -29,7 +29,7 @@ public class Startup
           .AddTypedClient<ITelegramBotClient>(httpClient
               => new TelegramBotClient(BotConfig.BotToken, httpClient));
 
-        services.AddScoped<IHandleUpdateService,HandleUpdateService>();
+        services.AddScoped<IHandleUpdateService, HandleUpdateService>();
 
         services.AddControllers();
     }
