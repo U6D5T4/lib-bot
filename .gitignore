@@ -112,11 +112,17 @@ $RECYCLE.BIN/
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+#appsettings.json files
+#*appsettings*.json
+
 # User-specific files
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
+
+#Solution file
+*.sln
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

@@ -5,5 +5,6 @@ namespace LibBot.Services.Interfaces;
 
 public interface IHandleUpdateService
 {
-
+    public Task SayHelloFromAnton(Update update);
+    public Task EchoAsync(Update update);
 }

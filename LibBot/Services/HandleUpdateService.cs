@@ -8,7 +8,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace LibBot.Services;
 
-public class HandleUpdateService:IHandleUpdateService
+public class HandleUpdateService : IHandleUpdateService
 {
     private readonly ITelegramBotClient _botClient;
 
@@ -19,6 +19,11 @@ public class HandleUpdateService:IHandleUpdateService
 
     public async Task EchoAsync(Update update)
     {
-       await _botClient.SendTextMessageAsync(update.Message.Chat.Id, update.Message.Text);
+        await _botClient.SendTextMessageAsync(update.Message.Chat.Id, update.Message.Text);
+    }
+
+    public async Task SayHelloFromAnton(Update update)
+    {
+        await _botClient.SendTextMessageAsync(update.Message.Chat.Id, "Hello, this is Anton's function!");
     }
 }
