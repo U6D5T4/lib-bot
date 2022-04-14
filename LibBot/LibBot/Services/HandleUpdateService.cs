@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LibBot.Services.Interfaces;
+using System;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
@@ -7,7 +8,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace LibBot.Services;
 
-public class HandleUpdateService
+public class HandleUpdateService:IHandleUpdateService
 {
     private readonly ITelegramBotClient _botClient;
 

@@ -1,4 +1,5 @@
 using LibBot.Services;
+using LibBot.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -28,7 +29,7 @@ public class Startup
           .AddTypedClient<ITelegramBotClient>(httpClient
               => new TelegramBotClient(BotConfig.BotToken, httpClient));
 
-        services.AddScoped<HandleUpdateService>();
+        services.AddScoped<IHandleUpdateService>();
 
         services.AddControllers();
     }
