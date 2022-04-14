@@ -1,6 +1,7 @@
 ﻿using LibBot.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using LibBot.Services.Interfaces;
 using Telegram.Bot.Types;
 
 namespace LibBot.Controllers;
@@ -8,10 +9,15 @@ namespace LibBot.Controllers;
 public class WebhookController : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> Post([FromServices] HandleUpdateService handleUpdateService,
+    public async Task<IActionResult> Post([FromServices] IHandleUpdateService handleUpdateService,
                                           [FromBody] Update update)
     {
-        await handleUpdateService.EchoAsync(update);
+        if (update is null)
+        {
+            return BadRequest();
+        }
+
+        await handleUpdateService.SayHelloFromAnton(update);
         return Ok();
     }
 }
