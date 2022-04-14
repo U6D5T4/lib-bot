@@ -112,6 +112,9 @@ $RECYCLE.BIN/
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+#appsettings.json files
+#*appsettings*.json
+
 # User-specific files
 *.suo
 *.user
