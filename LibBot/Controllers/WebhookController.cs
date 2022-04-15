@@ -18,6 +18,7 @@ public class WebhookController : ControllerBase
         }
 
         await handleUpdateService.SayHelloFromAnton(update);
+        await handleUpdateService.SayHelloFromArtyom(update);
         return Ok();
     }
 }
