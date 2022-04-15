@@ -6,14 +6,12 @@ using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace LibBot.Services;
 
 public class HandleUpdateService : IHandleUpdateService
 {
     private readonly ITelegramBotClient _botClient;
-    
     private readonly IMessageService _messageService;
     public HandleUpdateService(ITelegramBotClient botClient, IMessageService messageService)
     {
@@ -21,7 +19,7 @@ public class HandleUpdateService : IHandleUpdateService
         _messageService = messageService;
     }
 
-    public async Task EchoAsync(Update update)
+    public async Task HandleAsync(Update update)
     {
 
         var handler = update.Type switch

@@ -16,7 +16,7 @@ public class WebhookController : ControllerBase
             return BadRequest();
         }
 
-        await handleUpdateService.EchoAsync(update);
+        await handleUpdateService.HandleAsync(update);
         return Ok();
     }
 }
