@@ -30,6 +30,7 @@ public class Startup
               => new TelegramBotClient(BotConfig.BotToken, httpClient));
 
         services.AddScoped<IHandleUpdateService, HandleUpdateService>();
+        services.AddScoped<IMessageService, MessageService>();
 
         services.AddControllers().AddNewtonsoftJson();
     }
