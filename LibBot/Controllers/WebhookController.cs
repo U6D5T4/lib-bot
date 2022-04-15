@@ -1,5 +1,4 @@
-﻿using LibBot.Services;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using LibBot.Services.Interfaces;
 using Telegram.Bot.Types;
@@ -17,8 +16,7 @@ public class WebhookController : ControllerBase
             return BadRequest();
         }
 
-        await handleUpdateService.SayHelloFromAnton(update);
-        await handleUpdateService.SayHelloFromArtyom(update);
+        await handleUpdateService.EchoAsync(update);
         return Ok();
     }
 }
