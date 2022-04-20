@@ -1,3 +1,4 @@
+using LibBot.Models;
 using LibBot.Services;
 using LibBot.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
@@ -31,6 +32,9 @@ public class Startup
 
         services.AddScoped<IHandleUpdateService, HandleUpdateService>();
         services.AddScoped<IMessageService, MessageService>();
+        services.AddScoped<IMailService, MailService>();
+
+        services.AddOptions<EmailConfiguration>("EmailConfiguration");
 
         services.AddControllers().AddNewtonsoftJson();
     }
