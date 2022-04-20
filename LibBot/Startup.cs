@@ -31,6 +31,10 @@ public class Startup
 
         services.AddScoped<IHandleUpdateService, HandleUpdateService>();
         services.AddScoped<IMessageService, MessageService>();
+        services.AddScoped<IUserDbService, UserDbService>();
+        services.AddScoped<ICodeDbService, CodeDbService>();
+
+        services.AddSingleton<IConfigureDb, ConfigureDb>();
 
         services.AddControllers().AddNewtonsoftJson();
     }
