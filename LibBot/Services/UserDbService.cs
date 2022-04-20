@@ -16,24 +16,24 @@ public class UserDbService : IUserDbService
        _client = _configureDb.GetFirebaseClient();
     }
     
-    public async Task CreateUserAsync(IUserDbModel user)
+    public async Task CreateItemAsync(IUserDbModel user)
     {
        await _client.SetAsync(_dbName + user.ChatId, user);
     }
 
-    public async Task<IUserDbModel> ReadUserAsync(int chatId)
+    public async Task<IUserDbModel> ReadItemAsync(int chatId)
     {
         var result =  await _client.GetAsync(_dbName + chatId);
         var data = result.ResultAs<IUserDbModel>();
         return data;
     }
 
-    public async Task UpdateUserAsync(IUserDbModel user)
+    public async Task UpdateItemAsync(IUserDbModel user)
     {
         await _client.UpdateAsync(_dbName + user.ChatId, user);
     }
 
-    public async Task DeleteUserAsync(int chatId)
+    public async Task DeleteItemAsync(int chatId)
     {
        await _client.DeleteAsync(_dbName + chatId);
     }
