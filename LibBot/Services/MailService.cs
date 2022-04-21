@@ -18,7 +18,7 @@ namespace LibBot.Services
             _emailConfiguration = emailConfiguration.Value;
         }
 
-        public async Task SendAuthenticationCodeAsync(string email, string username, string authenticationCode)
+        public async Task SendAuthenticationCodeAsync(string email, string username, int authenticationCode)
         {
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(_emailConfiguration.DisplayName, _emailConfiguration.Email));

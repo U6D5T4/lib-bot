@@ -1,3 +1,4 @@
+using System;
 using LibBot.Models;
 using LibBot.Services;
 using LibBot.Services.Interfaces;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Telegram.Bot;
 
 namespace LibBot;
@@ -24,7 +26,11 @@ public class Startup
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddHostedService<ConfigureWebhook>();
+        services.AddHttpClient("SharePoint", httpClient =>
+        {
+            httpClient.BaseAddress = new Uri("https://u6.itechart-group.com:8443/");
+            httpClient.DefaultRequestHeaders.Add("Accept", "application/json;Odata=verbose");
+        });
 
         services.AddHttpClient("tgwebhook")
           .AddTypedClient<ITelegramBotClient>(httpClient
@@ -33,8 +39,10 @@ public class Startup
         services.AddScoped<IHandleUpdateService, HandleUpdateService>();
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IMailService, MailService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<ISharePointService, SharePointService>();
 
-        services.AddOptions<EmailConfiguration>("EmailConfiguration");
+        services.Configure<EmailConfiguration>(Configuration.GetSection("EmailConfiguration"));
 
         services.AddControllers().AddNewtonsoftJson();
     }
@@ -46,6 +54,8 @@ public class Startup
         {
             app.UseDeveloperExceptionPage();
         }
+
+      
 
         app.UseHttpsRedirection();
 

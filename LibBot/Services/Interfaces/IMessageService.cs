@@ -9,4 +9,6 @@ public interface IMessageService
     public Task<Message> SayHelloFromAnton(ITelegramBotClient bot, Message message);
     public Task<Message> SayHelloFromArtyom(ITelegramBotClient bot, Message message);
     public Task<Message> SayDefaultMessage(ITelegramBotClient bot, Message message);
+    public Task<Message> AskToEnterEmailOrUsername(ITelegramBotClient bot, Message message);
+    public Task<Message> AskToEnterAuthTokenFromMail(ITelegramBotClient bot, Message message);
 }
