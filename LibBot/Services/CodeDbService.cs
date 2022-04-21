@@ -9,7 +9,7 @@ public class CodeDbService:ICodeDbService
 {
     private readonly IConfigureDb _configureDb;
     private readonly IFirebaseClient _client;
-    private static readonly string _dbName = "Codes/";
+    private const string _dbName = "Codes/";
     public CodeDbService(IConfigureDb configureDb)
     {
         _configureDb = configureDb;

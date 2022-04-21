@@ -8,7 +8,7 @@ public class UserDbService : IUserDbService
 {
     private readonly IConfigureDb _configureDb;
     private readonly IFirebaseClient _client;
-    private static readonly string _dbName = "Users/";
+    private const string _dbName = "Users/";
 
     public UserDbService(IConfigureDb configureDb)
     {
