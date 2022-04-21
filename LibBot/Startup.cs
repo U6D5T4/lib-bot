@@ -4,7 +4,6 @@ using LibBot.Services;
 using LibBot.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -14,14 +13,11 @@ namespace LibBot;
 
 public class Startup
 {
-    public Startup(IConfiguration configuration)
+    private readonly BotConfiguration _botConfiguration;
+    public Startup(IOptions<BotConfiguration> botConfiguration)
     {
-        Configuration = configuration;
-        BotConfig = Configuration.GetSection("BotConfiguration").Get<BotConfiguration>();
+        _botConfiguration = botConfiguration.Value;
     }
-
-    public IConfiguration Configuration { get; }
-    private BotConfiguration BotConfig { get; }
 
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
@@ -34,7 +30,7 @@ public class Startup
 
         services.AddHttpClient("tgwebhook")
           .AddTypedClient<ITelegramBotClient>(httpClient
-              => new TelegramBotClient(BotConfig.BotToken, httpClient));
+              => new TelegramBotClient(_botConfiguration.BotToken, httpClient));
 
         services.AddScoped<IHandleUpdateService, HandleUpdateService>();
         services.AddScoped<IMessageService, MessageService>();
@@ -43,6 +39,12 @@ public class Startup
         services.AddScoped<ISharePointService, SharePointService>();
 
         services.Configure<EmailConfiguration>(Configuration.GetSection("EmailConfiguration"));
+        services.AddScoped<IUserDbService, UserDbService>();
+        services.AddScoped<ICodeDbService, CodeDbService>();
+        services.AddScoped<IConfigureDb, ConfigureDb>();
+
+        services.AddOptions<DbConfiguration>("DbConfiguration");
+        services.AddOptions<BotConfiguration>("BotConfiguration");
 
         services.AddControllers().AddNewtonsoftJson();
     }
@@ -55,8 +57,6 @@ public class Startup
             app.UseDeveloperExceptionPage();
         }
 
-      
-
         app.UseHttpsRedirection();
 
         app.UseRouting();
@@ -65,7 +65,7 @@ public class Startup
 
         app.UseEndpoints(endpoints =>
         {
-            var token = BotConfig.BotToken;
+            var token = _botConfiguration.BotToken;
             endpoints.MapControllerRoute(name: "tgwebhook",
                                          pattern: $"bot/{token}",
                                          new { controller = "Webhook", action = "Post" });

@@ -15,14 +15,14 @@ namespace LibBot.Services
             _botClient = botClient;
         }
 
-        private ReplyKeyboardMarkup replyKeyboardMarkup = new(
-            new[]
-            {
-                new KeyboardButton[] { "/first", "/second" },
-            })
+    private ReplyKeyboardMarkup replyKeyboardMarkup = new(
+        new[]
         {
-            ResizeKeyboard = true
-        };
+            new KeyboardButton[] { "/first", "/second" },
+        })
+    {
+        ResizeKeyboard = true
+    };
 
         public async Task<Message> SayHelloFromAnton(ITelegramBotClient bot, Message message)
         {
