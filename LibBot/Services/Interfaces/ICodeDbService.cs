@@ -5,8 +5,8 @@ namespace LibBot.Services.Interfaces;
 
 public interface ICodeDbService
 {
-    public Task CreateItemAsync(ICodeDbModel code);
-    public Task<ICodeDbModel> ReadItemAsync(int chatId);
-    public Task UpdateItemAsync(ICodeDbModel code);
+    public Task CreateItemAsync(CodeDbModel item);
+    public Task<CodeDbModel> ReadItemAsync(int chatId);
+    public Task UpdateItemAsync(CodeDbModel item);
     public Task DeleteItemAsync(int chatId);
 }

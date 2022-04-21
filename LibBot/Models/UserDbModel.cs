@@ -1,6 +1,6 @@
 ﻿namespace LibBot.Models;
 
-public interface IUserDbModel
+public class UserDbModel
 {
     public int ChatId { get; set; }
     public int SharePointId { get; set; }

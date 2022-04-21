@@ -16,21 +16,21 @@ public class CodeDbService:ICodeDbService
         _client = _configureDb.GetFirebaseClient();
     }
 
-    public async Task CreateItemAsync(ICodeDbModel code)
+    public async Task CreateItemAsync(CodeDbModel item)
     {
-       await _client.SetAsync(_dbName + code.ChatId, code);
+       await _client.SetAsync(_dbName + item.ChatId, item);
     }
 
-    public async Task<ICodeDbModel> ReadItemAsync(int chatId)
+    public async Task<CodeDbModel> ReadItemAsync(int chatId)
     {
        var result = await _client.GetAsync(_dbName + chatId);
-       ICodeDbModel data = result.ResultAs<ICodeDbModel>();
+       CodeDbModel data = result.ResultAs<CodeDbModel>();
        return data;
     }
 
-    public async Task UpdateItemAsync(ICodeDbModel code)
+    public async Task UpdateItemAsync(CodeDbModel item)
     {
-       await _client.UpdateAsync(_dbName + code.ChatId, code);
+       await _client.UpdateAsync(_dbName + item.ChatId, item);
     }
 
     public async Task DeleteItemAsync(int chatId)

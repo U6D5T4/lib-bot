@@ -2,25 +2,25 @@
 using FireSharp.Config;
 using FireSharp.Interfaces;
 using LibBot.Services.Interfaces;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace LibBot.Services;
 
 public class ConfigureDb: IConfigureDb
 {
-    private static DbConfiguration _dbConfig;
+    private static DbConfiguration _dbConfiguration;
 
-    public ConfigureDb(IConfiguration configuration)
+    public ConfigureDb(IOptions<DbConfiguration> dbConfiguration)
     {
-        _dbConfig = configuration.GetSection("DbConfiguration").Get<DbConfiguration>();
+        _dbConfiguration = dbConfiguration.Value;
     }
 
     public IFirebaseClient GetFirebaseClient()
     {
         IFirebaseConfig config = new FirebaseConfig
         {
-            AuthSecret = _dbConfig.AuthSecret,
-            BasePath = _dbConfig.BasePath
+            AuthSecret = _dbConfiguration.AuthSecret,
+            BasePath = _dbConfiguration.BasePath
         };
 
         IFirebaseClient client = new FirebaseClient(config);

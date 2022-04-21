@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,13 +12,13 @@ namespace LibBot.Services;
 public class ConfigureWebhook : IHostedService
 {
     private readonly IServiceProvider _services;
-    private readonly BotConfiguration _botConfig;
+    private readonly BotConfiguration _botConfiguration;
 
     public ConfigureWebhook(IServiceProvider serviceProvider,
-                            IConfiguration configuration)
+                            IOptions<BotConfiguration> botConfiguration)
     {
         _services = serviceProvider;
-        _botConfig = configuration.GetSection("BotConfiguration").Get<BotConfiguration>();
+        _botConfiguration = botConfiguration.Value;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -26,7 +26,7 @@ public class ConfigureWebhook : IHostedService
         using var scope = _services.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
 
-        var webhookAddress = @$"{_botConfig.HostAddress}/bot/{_botConfig.BotToken}";
+        var webhookAddress = @$"{_botConfiguration.HostAddress}/bot/{_botConfiguration.BotToken}";
         await botClient.SetWebhookAsync(
             url: webhookAddress,
             allowedUpdates: Array.Empty<UpdateType>(),

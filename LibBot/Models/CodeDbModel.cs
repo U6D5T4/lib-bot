@@ -2,7 +2,7 @@
 
 namespace LibBot.Models;
 
-public interface ICodeDbModel
+public class CodeDbModel
 {
     public int ChatId { get; set; }
     public int Code { get; set; }

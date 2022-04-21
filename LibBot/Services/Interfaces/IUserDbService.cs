@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 namespace LibBot.Services.Interfaces;
 public interface IUserDbService
 {
-    public Task CreateItemAsync(IUserDbModel user);
-    public Task<IUserDbModel> ReadItemAsync(int chatId);
-    public Task UpdateItemAsync(IUserDbModel user);
+    public Task CreateItemAsync(UserDbModel item);
+    public Task<UserDbModel> ReadItemAsync(int chatId);
+    public Task UpdateItemAsync(UserDbModel item);
     public Task DeleteItemAsync(int chatId);
 }
