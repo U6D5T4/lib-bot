@@ -4,12 +4,14 @@ namespace LibBot.Services.Interfaces
 {
     public interface IUserService
     {
-        public bool IsUserExist(long chatId);
-        public bool WasAuthenticationCodeSendForUser(long chatId);
-        public bool IsUserVerifyAccount(long chatId);
-        public Task<bool> IsLoginValid(string login);
-        public int GenerateAuthCodeAndSaveItIntoDatabase();
-        public Task SendEmailWithAuthToken(string login, string username, int authToken);
-        public Task<bool> VerifyAccount(string authCode, long chatId);
+        public Task<bool> IsUserExistAsync(long chatId);
+        public Task<bool> WasAuthenticationCodeSendForUserAsync(long chatId);
+        public Task<bool> IsUserVerifyAccountAsync(long chatId);
+        public Task<bool> IsLoginValidAsync(string login);
+        public Task<int> GenerateAuthCodeAndSaveItIntoDatabaseAsync(long chatId);
+        public Task SendEmailWithAuthTokenAsync(string login, string username, int authToken);
+        public Task<bool> VerifyAccountAsync(string authCode, long chatId);
+        public Task CreateUserAsync(long chatId);
+        public Task RejectUserAuthCodeAsync(long chatId);
     }
 }

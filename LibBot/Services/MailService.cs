@@ -27,11 +27,11 @@ namespace LibBot.Services
 
             message.Body = new TextPart("plain")
             {
-                Text = $"Dear, {username}" +
-                       Environment.NewLine +
-                       $"To end registration you can enter the following code into your conversation with bot: {authenticationCode}" +
-                       Environment.NewLine +
-                       "If you got this email, but Username is not yours, then just ignore it."
+                Text = $"Dear, {username}" 
+                       + Environment.NewLine 
+                       + $"To end registration you can enter the following code into your conversation with bot: {authenticationCode}" 
+                       + Environment.NewLine 
+                       + "If you got this email, but Username is not yours, then just ignore it."
             };
 
             using (var client = new SmtpClient())

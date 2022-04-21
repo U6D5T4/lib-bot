@@ -24,29 +24,23 @@ namespace LibBot.Services
         ResizeKeyboard = true
     };
 
-        public async Task<Message> SayHelloFromAnton(ITelegramBotClient bot, Message message)
+        public async Task<Message> SayHelloFromAntonAsync(ITelegramBotClient bot, Message message)
         {
             return await _botClient.SendTextMessageAsync(message.Chat.Id, "Hello, this is Anton's function!", replyMarkup: replyKeyboardMarkup);
         }
-        public async Task<Message> SayHelloFromArtyom(ITelegramBotClient bot, Message message)
+
+        public async Task<Message> SendTextMessageAndClearKeyboardAsync(ITelegramBotClient bot, long chatId, string message)
+        {
+            return await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: new ReplyKeyboardRemove());
+        }
+
+        public async Task<Message> SayHelloFromArtyomAsync(ITelegramBotClient bot, Message message)
         {
             return await _botClient.SendTextMessageAsync(message.Chat.Id, "Hello, this is Artyom's function!", replyMarkup: replyKeyboardMarkup);
         }
-        public async Task<Message> SayDefaultMessage(ITelegramBotClient bot, Message message)
+        public async Task<Message> SayDefaultMessageAsync(ITelegramBotClient bot, Message message)
         {
-            return await _botClient.SendTextMessageAsync(message.Chat.Id, message.Text, replyMarkup: replyKeyboardMarkup);
-        }
-
-        public async Task<Message> AskToEnterEmailOrUsername(ITelegramBotClient bot, Message message)
-        {
-            return await _botClient.SendTextMessageAsync(message.Chat.Id,
-                "Please, enter your outlook email or outlook login.", replyMarkup: new ReplyKeyboardRemove());
-        }
-
-        public async Task<Message> AskToEnterAuthTokenFromMail(ITelegramBotClient bot, Message message)
-        {
-            return await _botClient.SendTextMessageAsync(message.Chat.Id,
-                "Please, enter authorization token from your email to confirm registration.", replyMarkup: new ReplyKeyboardRemove());
+            return await _botClient.SendTextMessageAsync(message.Chat.Id, "Hey, I'm LibBot. If you are seeing this message, You have completed authentication successfully!", replyMarkup: replyKeyboardMarkup);
         }
     }
 }

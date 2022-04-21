@@ -4,6 +4,6 @@ namespace LibBot.Services.Interfaces
 {
     public interface ISharePointService
     {
-        public Task<bool> IsUserExistInSharePoint(string login);
+        public Task<bool> IsUserExistInSharePointAsync(string login);
     }
 }

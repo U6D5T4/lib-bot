@@ -14,13 +14,11 @@ public class HandleUpdateService : IHandleUpdateService
     private readonly ITelegramBotClient _botClient;
     private readonly IMessageService _messageService;
     private readonly IUserService _userService;
-    private readonly ISharePointService _sharePointService;
-    public HandleUpdateService(ITelegramBotClient botClient, IMessageService messageService, IUserService userService, ISharePointService sharePointService)
+    public HandleUpdateService(ITelegramBotClient botClient, IMessageService messageService, IUserService userService)
     {
         _botClient = botClient;
         _messageService = messageService;
         _userService = userService;
-        _sharePointService = sharePointService;
     }
 
     public async Task HandleAsync(Update update)
@@ -39,7 +37,7 @@ public class HandleUpdateService : IHandleUpdateService
 
         try
         {
-            await (Task)handler;
+            await handler;
         }
         catch (Exception exception)
         {
@@ -49,42 +47,55 @@ public class HandleUpdateService : IHandleUpdateService
 
     private async Task<bool> IsUserVerified(Message message)
     {
-        if (!_userService.IsUserExist(message.Chat.Id))
+        var chatId = message.Chat.Id;
+        if (await _userService.IsUserVerifyAccountAsync(chatId))
         {
-            //TODO: write into db
-            //Send message: "Send outlook username or outlook email"
-            await _messageService.AskToEnterEmailOrUsername(_botClient, message);
+            return true;
+        }
+
+        if (!await _userService.IsUserExistAsync(chatId))
+        {
+            await _userService.CreateUserAsync(chatId);
+            await _messageService.SendTextMessageAndClearKeyboardAsync(_botClient, chatId, "Please, enter your outlook email or outlook login.");
             return false;
         }
 
-        if (!_userService.WasAuthenticationCodeSendForUser(message.Chat.Id))
+        if (!await _userService.WasAuthenticationCodeSendForUserAsync(chatId))
         {
-            //TODO: check in SharePoint
-         
-            if (await _userService.IsLoginValid(message.Text))
+            if (await _userService.IsLoginValidAsync(message.Text))
             {
-                var authToken = _userService.GenerateAuthCodeAndSaveItIntoDatabase();
-                await _userService.SendEmailWithAuthToken(message.Text, message.Chat.Username, authToken);
-                await _messageService.AskToEnterAuthTokenFromMail(_botClient, message);
+                try
+                {
+                    var authToken = await _userService.GenerateAuthCodeAndSaveItIntoDatabaseAsync(chatId);
+                    await _userService.SendEmailWithAuthTokenAsync(message.Text, message.Chat.Username, authToken);
+                    await _messageService.SendTextMessageAndClearKeyboardAsync(_botClient, chatId, "Please, enter authorization token from your email to confirm registration.");
+                }
+                catch 
+                {
+                    await _userService.RejectUserAuthCodeAsync(chatId);
+                    await _messageService.SendTextMessageAndClearKeyboardAsync(_botClient, chatId,
+                        "Something go wrong, try again enter outlook email or outlook login");
+                }
+
             }
             else
             {
-                await _messageService.AskToEnterEmailOrUsername(_botClient, message);
+                await _messageService.SendTextMessageAndClearKeyboardAsync(_botClient, chatId,
+                    "We can't find user with such credentials"
+                    + Environment.NewLine
+                    + "Please, enter your outlook email or outlook login.");
             }
-            //Generate auth code, save it into db
-            //Send message: send auth code from email
+
             return false;
         }
 
-        if (!_userService.IsUserVerifyAccount(message.Chat.Id))
+        if (!await _userService.VerifyAccountAsync(message.Text, chatId))
         {
-            //TODO: check if code from user equals code in db
-            if (!await _userService.VerifyAccount(message.Text, message.Chat.Id))
-            {
-               await _messageService.AskToEnterAuthTokenFromMail(_botClient, message);
-            }
-            //Mark user as verified
-            //Send bot options and change keyboard
+            await _messageService.SendTextMessageAndClearKeyboardAsync(_botClient, chatId,
+                "You entered wrong code"
+                + Environment.NewLine
+                + "Please, enter authorization token from your email to confirm registration.");
+            return false;
         }
 
         return true;
@@ -98,9 +109,9 @@ public class HandleUpdateService : IHandleUpdateService
 
         var action = message.Text!.Split(' ')[0] switch
         {
-            "/first" => _messageService.SayHelloFromAnton(_botClient, message),
-            "/second" => _messageService.SayHelloFromArtyom(_botClient, message),
-            _ => _messageService.SayDefaultMessage(_botClient, message),
+            "/first" => _messageService.SayHelloFromAntonAsync(_botClient, message),
+            "/second" => _messageService.SayHelloFromArtyomAsync(_botClient, message),
+            _ => _messageService.SayDefaultMessageAsync(_botClient, message),
         };
 
         Message sentMessage = await action;
