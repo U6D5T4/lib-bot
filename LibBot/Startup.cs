@@ -47,6 +47,8 @@ public class Startup
         services.Configure<EmailConfiguration>(Configuration.GetSection("EmailConfiguration"));
         services.Configure<DbConfiguration>(Configuration.GetSection("DbConfiguration"));
         services.Configure<BotConfiguration>(Configuration.GetSection("BotConfiguration"));
+        services.Configure<BotCredentialsConfiguration>(Configuration.GetSection("BotCredentials"));
+        services.Configure<SharePointConfiguration>(Configuration.GetSection("SharePointConfiguration"));
 
         services.AddControllers().AddNewtonsoftJson();
     }
