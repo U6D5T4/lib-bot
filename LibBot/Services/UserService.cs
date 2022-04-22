@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading.Tasks;
 using LibBot.Models;
 using LibBot.Models.Configurations;
@@ -56,18 +57,18 @@ public class UserService : IUserService
 
         var code = await GetCodeByChatIdAsync(chatId) ?? new CodeDbModel { ChatId = chatId };
         code.Code = authCode;
-        code.ExpiryDate = DateTime.Now.AddMinutes(5);
+        code.ExpiryDate = DateTime.UtcNow.AddMinutes(1);
 
         await _codeDbService.UpdateItemAsync(code);
         return authCode;
     }
 
-    public async Task SendEmailWithAuthCodeAsync(string login, string username, int authToken)
+    public async Task SendEmailWithAuthCodeAsync(long chatId, string username, int authToken)
     {
         try
         {
-            var email = ParseLogin(login);
-            await _mailService.SendAuthenticationCodeAsync(email, username, authToken);
+            var user = await GetUserByChatIdAsync(chatId);
+            await _mailService.SendAuthenticationCodeAsync(user.Email, username, authToken);
         }
         catch (Exception e)
         {
@@ -109,12 +110,20 @@ public class UserService : IUserService
     public async Task<bool> IsCodeLifetimeExpiredAsync(long chatId)
     {
         var code = await GetCodeByChatIdAsync(chatId);
-        return code is null || code.ExpiryDate < DateTime.Now;
+        return code is null || code.ExpiryDate < DateTime.UtcNow;
+    }
+
+    public async Task UpdateUserEmailAsync(long chatId, string login)
+    {
+        var user = await GetUserByChatIdAsync(chatId);
+        user.Email = ParseLogin(login);
+        await _userDbService.UpdateItemAsync(user);
     }
 
     public bool TryParseAuthCode(string authCode, out int result)
     {
         result = -1;
+        authCode = authCode.Trim();
         if (string.IsNullOrEmpty(authCode) || authCode.Length != 4 || !authCode.All(char.IsDigit))
         {
             return false;

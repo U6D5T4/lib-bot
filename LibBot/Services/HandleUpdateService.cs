@@ -64,7 +64,9 @@ public class HandleUpdateService : IHandleUpdateService
         {
             if (await _userService.IsLoginValidAsync(message.Text))
             {
+                await _userService.UpdateUserEmailAsync(chatId, message.Text);
                 await CreateAndSendAuthCodeAsync(chatId, message);
+                await _messageService.AskToEnterAuthCodeAsync(_botClient, message);
             }
             else
             {
@@ -98,8 +100,7 @@ public class HandleUpdateService : IHandleUpdateService
         try
         {
             var authCode = await _userService.GenerateAuthCodeAndSaveItIntoDatabaseAsync(chatId);
-            await _userService.SendEmailWithAuthCodeAsync(message.Text, message.Chat.Username, authCode);
-            await _messageService.AskToEnterAuthCodeAsync(_botClient, message);
+            await _userService.SendEmailWithAuthCodeAsync(chatId, message.Chat.Username, authCode);
         }
         catch
         {
