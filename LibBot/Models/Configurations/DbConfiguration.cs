@@ -1,4 +1,4 @@
-﻿namespace LibBot;
+﻿namespace LibBot.Models.Configurations;
 
 public class DbConfiguration
 {

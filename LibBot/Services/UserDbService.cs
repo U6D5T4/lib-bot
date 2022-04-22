@@ -21,7 +21,7 @@ public class UserDbService : IUserDbService
        await _client.SetAsync(_dbName + user.ChatId, user);
     }
 
-    public async Task<UserDbModel> ReadItemAsync(int chatId)
+    public async Task<UserDbModel> ReadItemAsync(long chatId)
     {
         var result =  await _client.GetAsync(_dbName + chatId);
         var data = result.ResultAs<UserDbModel>();
@@ -33,7 +33,7 @@ public class UserDbService : IUserDbService
         await _client.UpdateAsync(_dbName + user.ChatId, user);
     }
 
-    public async Task DeleteItemAsync(int chatId)
+    public async Task DeleteItemAsync(long chatId)
     {
        await _client.DeleteAsync(_dbName + chatId);
     }

@@ -1,6 +1,7 @@
 ﻿using FireSharp;
 using FireSharp.Config;
 using FireSharp.Interfaces;
+using LibBot.Models.Configurations;
 using LibBot.Services.Interfaces;
 using Microsoft.Extensions.Options;
 
