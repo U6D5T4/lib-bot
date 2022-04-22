@@ -30,6 +30,7 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddSharePointHttpClient(Configuration);
+        services.AddHostedService<ConfigureWebhook>();
 
         services.AddHttpClient("tgwebhook")
           .AddTypedClient<ITelegramBotClient>(httpClient
