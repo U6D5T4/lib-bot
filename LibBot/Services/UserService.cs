@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using LibBot.Models;
 using LibBot.Models.Configurations;
@@ -77,21 +78,21 @@ public class UserService : IUserService
 
     public async Task<bool> VerifyAccountAsync(string authCode, long chatId)
     {
-        var code = await GetCodeByChatIdAsync(chatId);
-        if (code is null || code.ExpiryDate < DateTime.Now)
+        if (!TryParseAuthCode(authCode, out var parsedCode))
         {
             return false;
         }
 
-        if (int.TryParse(authCode, out var parsedCode))
+        var code = await GetCodeByChatIdAsync(chatId);
+        if (code is null)
         {
-            var user = await GetUserByChatIdAsync(chatId);
-            user.IsConfirmed = code.Code == parsedCode;
-            await _userDbService.UpdateItemAsync(user);
-            return user.IsConfirmed;
+            return false;
         }
 
-        return false;
+        var user = await GetUserByChatIdAsync(chatId);
+        user.IsConfirmed = code.Code == parsedCode;
+        await _userDbService.UpdateItemAsync(user);
+        return user.IsConfirmed;
     }
 
     public async Task CreateUserAsync(long chatId)
@@ -109,6 +110,18 @@ public class UserService : IUserService
     {
         var code = await GetCodeByChatIdAsync(chatId);
         return code is null || code.ExpiryDate < DateTime.Now;
+    }
+
+    public bool TryParseAuthCode(string authCode, out int result)
+    {
+        result = -1;
+        if (string.IsNullOrEmpty(authCode) || authCode.Length != 4 || !authCode.All(char.IsDigit))
+        {
+            return false;
+        }
+
+        result = int.Parse(authCode);
+        return true;
     }
 
     private string ParseLogin(string login) => login.EndsWith(_domainName) ? login : login + _domainName;

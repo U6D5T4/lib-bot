@@ -48,7 +48,7 @@ public class MessageService : IMessageService
     public async Task<Message> AskToEnterAuthCodeAsync(ITelegramBotClient bot, Message message)
     {
         return await SendTextMessageAndClearKeyboardAsync(bot, message.Chat.Id,
-            "Please, check your email and enter your auth code.");
+            "Please, check your email and enter your auth code here.");
     }
 
     public async Task<Message> SayDefaultMessageAsync(ITelegramBotClient bot, Message message)
