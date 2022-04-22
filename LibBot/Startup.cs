@@ -1,8 +1,4 @@
-using System;
-using System.Net;
-using System.Net.Http;
 using LibBot.ConfigureServicesExtensions;
-using LibBot.Models;
 using LibBot.Models.Configurations;
 using LibBot.Services;
 using LibBot.Services.Interfaces;
@@ -11,7 +7,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Telegram.Bot;
 
 namespace LibBot;
@@ -29,9 +24,9 @@ public class Startup
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddSharePointHttpClient(Configuration);
         services.AddHostedService<ConfigureWebhook>();
 
+        services.AddSharePointHttpClient(Configuration);
         services.AddHttpClient("tgwebhook")
           .AddTypedClient<ITelegramBotClient>(httpClient
               => new TelegramBotClient(_botConfiguration.BotToken, httpClient));
