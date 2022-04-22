@@ -1,117 +1,125 @@
 ﻿using System;
 using System.Threading.Tasks;
 using LibBot.Models;
+using LibBot.Models.Configurations;
 using LibBot.Services.Interfaces;
+using Microsoft.Extensions.Options;
 
-namespace LibBot.Services
+namespace LibBot.Services;
+
+public class UserService : IUserService
 {
-    public class UserService : IUserService
+    private readonly string _domainName;
+    private readonly ISharePointService _sharePointService;
+    private readonly IMailService _mailService;
+    private readonly IUserDbService _userDbService;
+    private readonly ICodeDbService _codeDbService;
+
+    public UserService(ISharePointService sharePointService, IMailService mailService, IUserDbService userDbService, ICodeDbService codeDbService, IOptions<SharePointConfiguration> spConfiguration)
     {
-        private const string _domainName = "@itechart-group.com";
-        private readonly ISharePointService _sharePointService;
-        private readonly IMailService _mailService;
-        private readonly IUserDbService _userDbService;
-        private readonly ICodeDbService _codeDbService;
+        _sharePointService = sharePointService;
+        _mailService = mailService;
+        _userDbService = userDbService;
+        _codeDbService = codeDbService;
+        _domainName = spConfiguration.Value.MailDomain;
+    }
 
-        public UserService(ISharePointService sharePointService, IMailService mailService, IUserDbService userDbService, ICodeDbService codeDbService)
-        {
-            _sharePointService = sharePointService;
-            _mailService = mailService;
-            _userDbService = userDbService;
-            _codeDbService = codeDbService;
-        }
+    public async Task<bool> IsUserExistAsync(long chatId)
+    {
+        var user = await GetUserByChatIdAsync(chatId);
+        return user is not null;
+    }
 
-        public async Task<bool> IsUserExistAsync(long chatId)
-        {
-            var user = await GetUserByChatIdAsync(chatId);
-            return user is not null;
-        }
+    public async Task<bool> WasAuthenticationCodeSendForUserAsync(long chatId)
+    {
+        var code = await _codeDbService.ReadItemAsync(chatId);
+        return code is not null && code.Code != 0;
+    }
 
-        public async Task<bool> WasAuthenticationCodeSendForUserAsync(long chatId)
-        {
-            var code = await _codeDbService.ReadItemAsync((int)chatId);
-            return code is not null && code.ExpiryDate > DateTime.Now;
-        }
+    public async Task<bool> IsUserVerifyAccountAsync(long chatId)
+    {
+        var user = await GetUserByChatIdAsync(chatId);
+        return user is not null && user.IsConfirmed;
+    }
 
-        public async Task<bool> IsUserVerifyAccountAsync(long chatId)
-        {
-            var user = await GetUserByChatIdAsync(chatId);
-            return user is not null && user.IsConfirmed;
-        }
+    public async Task<bool> IsLoginValidAsync(string login)
+    {
+        var email = ParseLogin(login);
+        return await _sharePointService.IsUserExistInSharePointAsync(email);
+    }
 
-        public async Task<bool> IsLoginValidAsync(string login)
-        {
-            var email = ParseLogin(login);
-            return await _sharePointService.IsUserExistInSharePointAsync(email);
-        }
+    public async Task<int> GenerateAuthCodeAndSaveItIntoDatabaseAsync(long chatId)
+    {
+        var random = new Random();
+        var authCode = random.Next(1000, 10_000);
 
-        public async Task<int> GenerateAuthCodeAndSaveItIntoDatabaseAsync(long chatId)
-        {
-            var random = new Random();
-            var authCode = random.Next(1000, 10_000);
+        var code = await GetCodeByChatIdAsync(chatId) ?? new CodeDbModel { ChatId = chatId };
+        code.Code = authCode;
+        code.ExpiryDate = DateTime.Now.AddMinutes(5);
 
-            var code = await GetCodeByChatIdAsync(chatId) ?? new CodeDbModel { ChatId = chatId };
-            code.Code = authCode;
-            code.ExpiryDate = DateTime.Now.AddMinutes(5);
+        await _codeDbService.UpdateItemAsync(code);
+        return authCode;
+    }
 
-            await _codeDbService.UpdateItemAsync(code);
-            return authCode;
-        }
-
-        public async Task SendEmailWithAuthTokenAsync(string login, string username, int authToken)
+    public async Task SendEmailWithAuthCodeAsync(string login, string username, int authToken)
+    {
+        try
         {
             var email = ParseLogin(login);
-            try
-            {
-                await _mailService.SendAuthenticationCodeAsync(email, username, authToken);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                throw;
-            }
+            await _mailService.SendAuthenticationCodeAsync(email, username, authToken);
         }
-
-        public async Task<bool> VerifyAccountAsync(string authCode, long chatId)
+        catch (Exception e)
         {
-            var code = await GetCodeByChatIdAsync(chatId);
-            if (code is null || code.ExpiryDate < DateTime.Now)
-            {
-                return false;
-            }
+            Console.WriteLine(e.Message);
+            throw;
+        }
+    }
 
-            if (int.TryParse(authCode, out var parsedCode))
-            {
-                var user = await GetUserByChatIdAsync(chatId);
-                user.IsConfirmed = code.Code == parsedCode;
-                await _userDbService.UpdateItemAsync(user);
-                return user.IsConfirmed;
-            }
-
+    public async Task<bool> VerifyAccountAsync(string authCode, long chatId)
+    {
+        var code = await GetCodeByChatIdAsync(chatId);
+        if (code is null || code.ExpiryDate < DateTime.Now)
+        {
             return false;
         }
 
-        public async Task CreateUserAsync(long chatId)
+        if (int.TryParse(authCode, out var parsedCode))
         {
-            var user = new UserDbModel { ChatId = chatId };
-            await _userDbService.CreateItemAsync(user);
+            var user = await GetUserByChatIdAsync(chatId);
+            user.IsConfirmed = code.Code == parsedCode;
+            await _userDbService.UpdateItemAsync(user);
+            return user.IsConfirmed;
         }
 
-        public async Task RejectUserAuthCodeAsync(long chatId)
-        {
-            await _codeDbService.DeleteItemAsync((int)chatId);
-        }
+        return false;
+    }
 
-        private string ParseLogin(string login) => login.EndsWith(_domainName) ? login : login + _domainName;
+    public async Task CreateUserAsync(long chatId)
+    {
+        var user = new UserDbModel { ChatId = chatId };
+        await _userDbService.CreateItemAsync(user);
+    }
 
-        private async Task<UserDbModel> GetUserByChatIdAsync(long chatId)
-        {
-            return await _userDbService.ReadItemAsync((int)chatId);
-        }
+    public async Task RejectUserAuthCodeAsync(long chatId)
+    {
+        await _codeDbService.DeleteItemAsync(chatId);
+    }
 
-        private async Task<CodeDbModel> GetCodeByChatIdAsync(long chatId)
-        {
-            return await _codeDbService.ReadItemAsync((int)chatId);
-        }
+    public async Task<bool> IsCodeLifetimeExpiredAsync(long chatId)
+    {
+        var code = await GetCodeByChatIdAsync(chatId);
+        return code is null || code.ExpiryDate < DateTime.Now;
+    }
+
+    private string ParseLogin(string login) => login.EndsWith(_domainName) ? login : login + _domainName;
+
+    private async Task<UserDbModel> GetUserByChatIdAsync(long chatId)
+    {
+        return await _userDbService.ReadItemAsync(chatId);
+    }
+
+    private async Task<CodeDbModel> GetCodeByChatIdAsync(long chatId)
+    {
+        return await _codeDbService.ReadItemAsync(chatId);
     }
 }

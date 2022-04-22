@@ -21,7 +21,7 @@ public class CodeDbService:ICodeDbService
        await _client.SetAsync(_dbName + item.ChatId, item);
     }
 
-    public async Task<CodeDbModel> ReadItemAsync(int chatId)
+    public async Task<CodeDbModel> ReadItemAsync(long chatId) 
     {
        var result = await _client.GetAsync(_dbName + chatId);
        CodeDbModel data = result.ResultAs<CodeDbModel>();
@@ -33,7 +33,7 @@ public class CodeDbService:ICodeDbService
        await _client.UpdateAsync(_dbName + item.ChatId, item);
     }
 
-    public async Task DeleteItemAsync(int chatId)
+    public async Task DeleteItemAsync(long chatId)
     {
        await _client.DeleteAsync(_dbName + chatId);
     }

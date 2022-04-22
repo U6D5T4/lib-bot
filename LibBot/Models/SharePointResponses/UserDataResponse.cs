@@ -1,7 +1,6 @@
-﻿namespace LibBot.Models.SharePointResponses
+﻿namespace LibBot.Models.SharePointResponses;
+
+public class UserDataResponse
 {
-    public class UserDataResponse
-    {
-        public string Email { get; set; }
-    }
+    public string Email { get; set; }
 }

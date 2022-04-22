@@ -5,7 +5,7 @@ namespace LibBot.Services.Interfaces;
 public interface IUserDbService
 {
     public Task CreateItemAsync(UserDbModel item);
-    public Task<UserDbModel> ReadItemAsync(int chatId);
+    public Task<UserDbModel> ReadItemAsync(long chatId);
     public Task UpdateItemAsync(UserDbModel item);
-    public Task DeleteItemAsync(int chatId);
+    public Task DeleteItemAsync(long chatId);
 }

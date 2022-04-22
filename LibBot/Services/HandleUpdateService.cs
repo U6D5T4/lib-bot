@@ -23,7 +23,7 @@ public class HandleUpdateService : IHandleUpdateService
 
     public async Task HandleAsync(Update update)
     {
-        if (!await IsUserVerified(update.Message))
+        if (!await HandleAuthenticationAsync(update.Message))
         {
             return;
         }
@@ -45,7 +45,7 @@ public class HandleUpdateService : IHandleUpdateService
         }
     }
 
-    private async Task<bool> IsUserVerified(Message message)
+    private async Task<bool> HandleAuthenticationAsync(Message message)
     {
         var chatId = message.Chat.Id;
         if (await _userService.IsUserVerifyAccountAsync(chatId))
@@ -56,7 +56,7 @@ public class HandleUpdateService : IHandleUpdateService
         if (!await _userService.IsUserExistAsync(chatId))
         {
             await _userService.CreateUserAsync(chatId);
-            await _messageService.SendTextMessageAndClearKeyboardAsync(_botClient, chatId, "Please, enter your outlook email or outlook login.");
+            await _messageService.AskToEnterOutlookLoginAsync(_botClient, message);
             return false;
         }
 
@@ -64,41 +64,49 @@ public class HandleUpdateService : IHandleUpdateService
         {
             if (await _userService.IsLoginValidAsync(message.Text))
             {
-                try
-                {
-                    var authToken = await _userService.GenerateAuthCodeAndSaveItIntoDatabaseAsync(chatId);
-                    await _userService.SendEmailWithAuthTokenAsync(message.Text, message.Chat.Username, authToken);
-                    await _messageService.SendTextMessageAndClearKeyboardAsync(_botClient, chatId, "Please, enter authorization token from your email to confirm registration.");
-                }
-                catch 
-                {
-                    await _userService.RejectUserAuthCodeAsync(chatId);
-                    await _messageService.SendTextMessageAndClearKeyboardAsync(_botClient, chatId,
-                        "Something go wrong, try again enter outlook email or outlook login");
-                }
-
+                await CreateAndSendAuthCodeAsync(chatId, message);
             }
             else
             {
-                await _messageService.SendTextMessageAndClearKeyboardAsync(_botClient, chatId,
-                    "We can't find user with such credentials"
-                    + Environment.NewLine
-                    + "Please, enter your outlook email or outlook login.");
+                await _messageService.SendTextMessageAndClearKeyboardAsync(_botClient, chatId, "We can't find user with such credentials");
+                await _messageService.AskToEnterOutlookLoginAsync(_botClient, message);
             }
 
+            return false;
+        }
+
+        if (await _userService.IsCodeLifetimeExpiredAsync(chatId))
+        {
+            await CreateAndSendAuthCodeAsync(chatId, message);
+            await _messageService.SendTextMessageAndClearKeyboardAsync(_botClient, chatId, "Code lifetime was expired.");
+            await _messageService.AskToEnterAuthCodeAsync(_botClient, message);
             return false;
         }
 
         if (!await _userService.VerifyAccountAsync(message.Text, chatId))
         {
-            await _messageService.SendTextMessageAndClearKeyboardAsync(_botClient, chatId,
-                "You entered wrong code"
-                + Environment.NewLine
-                + "Please, enter authorization token from your email to confirm registration.");
+            await _messageService.SendTextMessageAndClearKeyboardAsync(_botClient, chatId, "You entered wrong code ");
+            await _messageService.AskToEnterAuthCodeAsync(_botClient, message);
             return false;
         }
 
         return true;
+    }
+
+    private async Task CreateAndSendAuthCodeAsync(long chatId, Message message)
+    {
+        try
+        {
+            var authCode = await _userService.GenerateAuthCodeAndSaveItIntoDatabaseAsync(chatId);
+            await _userService.SendEmailWithAuthCodeAsync(message.Text, message.Chat.Username, authCode);
+            await _messageService.AskToEnterAuthCodeAsync(_botClient, message);
+        }
+        catch
+        {
+            await _userService.RejectUserAuthCodeAsync(chatId);
+            await _messageService.SendTextMessageAndClearKeyboardAsync(_botClient, chatId,
+                "Something go wrong, try again enter outlook email or outlook login");
+        }
     }
 
     private async Task BotOnMessageReceived(Message message)

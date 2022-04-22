@@ -1,7 +1,9 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using LibBot.ConfigureServicesExtensions;
 using LibBot.Models;
+using LibBot.Models.Configurations;
 using LibBot.Services;
 using LibBot.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
@@ -27,14 +29,7 @@ public class Startup
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddHttpClient("SharePoint", httpClient =>
-        {
-            httpClient.BaseAddress = new Uri("https://u6.itechart-group.com:8443/");
-            httpClient.DefaultRequestHeaders.Add("Accept", "application/json;Odata=verbose");
-        }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-        {
-            Credentials = CredentialCache.DefaultNetworkCredentials
-        });
+        services.AddSharePointHttpClient(Configuration);
 
         services.AddHttpClient("tgwebhook")
           .AddTypedClient<ITelegramBotClient>(httpClient
@@ -45,12 +40,11 @@ public class Startup
         services.AddScoped<IMailService, MailService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ISharePointService, SharePointService>();
-
-        services.Configure<EmailConfiguration>(Configuration.GetSection("EmailConfiguration"));
         services.AddScoped<IUserDbService, UserDbService>();
         services.AddScoped<ICodeDbService, CodeDbService>();
         services.AddScoped<IConfigureDb, ConfigureDb>();
 
+        services.Configure<EmailConfiguration>(Configuration.GetSection("EmailConfiguration"));
         services.Configure<DbConfiguration>(Configuration.GetSection("DbConfiguration"));
         services.Configure<BotConfiguration>(Configuration.GetSection("BotConfiguration"));
 
