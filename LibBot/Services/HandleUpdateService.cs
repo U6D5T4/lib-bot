@@ -34,7 +34,6 @@ public class HandleUpdateService : IHandleUpdateService
             _ => UnknownUpdateHandlerAsync(update)
         };
 
-
         try
         {
             await handler;
@@ -44,7 +43,7 @@ public class HandleUpdateService : IHandleUpdateService
             await HandleErrorAsync(exception);
         }
     }
-
+    
     private async Task<bool> HandleAuthenticationAsync(Message message)
     {
         var chatId = message.Chat.Id;
@@ -109,12 +108,11 @@ public class HandleUpdateService : IHandleUpdateService
                 "Something go wrong, try again enter outlook email or outlook login");
         }
     }
-
+    
     private async Task BotOnMessageReceived(Message message)
     {
         if (message.Type != MessageType.Text)
             return;
-
 
         var action = message.Text!.Split(' ')[0] switch
         {

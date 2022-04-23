@@ -20,12 +20,12 @@ public class Startup
         Configuration = configuration;
         _botConfiguration = Configuration.GetSection("BotConfiguration").Get<BotConfiguration>();
     }
-
+  
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddHostedService<ConfigureWebhook>();
-
+      
         services.AddSharePointHttpClient(Configuration);
         services.AddHttpClient("tgwebhook")
           .AddTypedClient<ITelegramBotClient>(httpClient

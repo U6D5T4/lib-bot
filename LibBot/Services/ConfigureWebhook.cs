@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System;
@@ -20,6 +20,7 @@ public class ConfigureWebhook : IHostedService
     {
         _services = serviceProvider;
         _botConfiguration = botConfiguration.Value;
+
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -28,6 +29,7 @@ public class ConfigureWebhook : IHostedService
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
 
         var webhookAddress = @$"{_botConfiguration.HostAddress}/bot/{_botConfiguration.BotToken}";
+
         await botClient.SetWebhookAsync(
             url: webhookAddress,
             allowedUpdates: Array.Empty<UpdateType>(),
