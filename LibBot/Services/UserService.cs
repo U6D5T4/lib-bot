@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Net.Mail;
 using System.Threading.Tasks;
@@ -57,7 +57,8 @@ public class UserService : IUserService
 
         var code = await GetCodeByChatIdAsync(chatId) ?? new CodeDbModel { ChatId = chatId };
         code.Code = authCode;
-        code.ExpiryDate = DateTime.UtcNow.AddMinutes(1);
+
+        code.ExpiryDate = DateTime.UtcNow.AddMinutes(5);
 
         await _codeDbService.UpdateItemAsync(code);
         return authCode;
