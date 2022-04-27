@@ -25,6 +25,16 @@ public class MessageService : IMessageService
     {
         ResizeKeyboard = true
     };
+
+    InlineKeyboardMarkup inlineKeyboard = new(new[]
+    {
+        new []
+        {
+            InlineKeyboardButton.WithCallbackData(text: "No", callbackData: "No"),
+            InlineKeyboardButton.WithCallbackData(text: "Yes", callbackData: "Yes"),
+        }
+    });
+
     public async Task<Message> SayHelloFromAntonAsync(ITelegramBotClient bot, Message message)
     {
         return await _botClient.SendTextMessageAsync(message.Chat.Id, "Hello, this is Anton's function!", replyMarkup: replyKeyboardMarkup);
@@ -52,6 +62,10 @@ public class MessageService : IMessageService
             "Please, check your email and enter your auth code here.");
     }
 
+    public async Task EditMessageAfterYesAndNoButtons(ITelegramBotClient bot, CallbackQuery callbackQuery)
+    {
+        await _botClient.EditMessageTextAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId, "These books are in our library.");
+    }
     public async Task<Message> SayDefaultMessageAsync(ITelegramBotClient bot, Message message)
     {
         return await _botClient.SendTextMessageAsync(message.Chat.Id, "Hey, I'm LibBot. If you are seeing this message, You have completed authentication successfully!", replyMarkup: replyKeyboardMarkup);
@@ -73,5 +87,38 @@ public class MessageService : IMessageService
         return new InlineKeyboardMarkup(inlineButtonsTwoColumns.ToArray());
     }
 
+    public async Task CreateYesAndNoButtons(ITelegramBotClient bot, CallbackQuery callbackQuery)
+    {
+        await _botClient.EditMessageTextAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId, "Are you sure you want to borrow this book?");
+        await _botClient.EditMessageReplyMarkupAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId, replyMarkup: inlineKeyboard);
+    }
 
+    public async Task<Message> DisplayBookButtons(ITelegramBotClient bot, Message message, List<BookDataResponse> books)
+    {
+        List<InlineKeyboardButton> buttons = CreateBookButtons(books);
+        inlineKeyboard = SetInlineKeyboardInTwoColumns(buttons);
+        return await _botClient.SendTextMessageAsync(message.Chat.Id, "These books are in our library.", replyMarkup: inlineKeyboard);
+    }
+
+    public async Task UpdateBookButtons(Message message, List<BookDataResponse> books)
+    {
+        List<InlineKeyboardButton> buttons = CreateBookButtons(books);
+        inlineKeyboard = SetInlineKeyboardInTwoColumns(buttons);
+        await _botClient.EditMessageReplyMarkupAsync(message.Chat.Id, message.MessageId, inlineKeyboard);
+    }
+
+    public List<InlineKeyboardButton> CreateBookButtons(List<BookDataResponse> books)
+    {
+        List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
+        foreach (BookDataResponse book in books)
+        {
+            var button = InlineKeyboardButton.WithCallbackData(text: book.Title, callbackData: book.Id.ToString());
+            buttons.Add(button);
+        }
+
+        buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Previous", callbackData: "Previous"));
+        buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Next", callbackData: "Next"));
+
+        return buttons;
+    }
 }

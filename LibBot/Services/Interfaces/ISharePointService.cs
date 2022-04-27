@@ -1,4 +1,5 @@
-﻿using LibBot.Models.SharePointResponses;
+﻿using LibBot.Models;
+using LibBot.Models.SharePointResponses;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -11,5 +12,8 @@ public interface ISharePointService
     public void SetNextPageNumberValue();
     public void SetPreviousPageNumberValue();
     public void SetDefaultPageNumberValue();
+    public Task<string> GetFormDigestValueFromSharePointAsync();
+    public Task<UserDataResponse> GetUserDataFromSharePointAsync(string login);
+    public Task<bool> BorrowBook(long chatId, int bookId, UserDbModel userData);
 
 }
