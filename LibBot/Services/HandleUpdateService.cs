@@ -14,29 +14,36 @@ public class HandleUpdateService : IHandleUpdateService
     private readonly ITelegramBotClient _botClient;
     private readonly IMessageService _messageService;
     private readonly IUserService _userService;
-    public HandleUpdateService(ITelegramBotClient botClient, IMessageService messageService, IUserService userService)
+    private readonly ISharePointService _sharePointService;
+    private readonly IBookService _bookService;
+    public HandleUpdateService(ITelegramBotClient botClient, IMessageService messageService, IUserService userService, ISharePointService sharePointService, IBookService bookService)
     {
         _botClient = botClient;
         _messageService = messageService;
         _userService = userService;
+        _sharePointService = sharePointService;
+        _bookService = bookService;
     }
 
     public async Task HandleAsync(Update update)
     {
-        if (!await HandleAuthenticationAsync(update.Message))
-        {
-            return;
-        }
-
-        var handler = update.Type switch
-        {
-            UpdateType.Message => BotOnMessageReceived(update.Message!),
-            _ => UnknownUpdateHandlerAsync(update)
-        };
-
         try
         {
-            await handler;
+            switch (update.Type)
+            {
+                case UpdateType.Message:
+                    if (!await HandleAuthenticationAsync(update.Message))
+                    {
+                        return;
+                    }
+                    await BotOnMessageReceived(update.Message!);
+                    break;
+                case UpdateType.CallbackQuery:
+                    await BotOnCallbackQueryReceived(update.CallbackQuery!);
+                    break;
+                default:
+                    break;
+            };
         }
         catch (Exception exception)
         {
@@ -114,18 +121,50 @@ public class HandleUpdateService : IHandleUpdateService
         if (message.Type != MessageType.Text)
             return;
 
-        var action = message.Text!.Split(' ')[0] switch
-        {
-            "/first" => _messageService.SayHelloFromAntonAsync(_botClient, message),
-            "/second" => _messageService.SayHelloFromArtyomAsync(_botClient, message),
-            _ => _messageService.SayDefaultMessageAsync(_botClient, message),
-        };
+       switch (message.Text) {
+            case "/first":
+               await _messageService.SayHelloFromAntonAsync(_botClient, message);
+                break;
 
-        Message sentMessage = await action;
+            case "/second":
+                await _messageService.SayHelloFromArtyomAsync(_botClient, message);
+                break;
+
+            case "All Books":
+                _sharePointService.SetDefaultPageNumberValue();
+                var books = await _sharePointService.GetBooksFromSharePointAsync();
+                await _bookService.DisplayBookButtons(_botClient, message, books);
+                break;
+
+            default:
+                await _messageService.SayDefaultMessageAsync(_botClient, message);
+                break;
+
+        }
 
         await SetCommand();
     }
+    private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery)
+    {
+        switch (callbackQuery.Data)
+        {
+            case "Next":
+                _sharePointService.SetNextPageNumberValue();
+                var booksNext = await _sharePointService.GetBooksFromSharePointAsync();
+                await _bookService.UpdateBookButtons(_botClient, callbackQuery.Message, booksNext);
+                break;
 
+            case "Previous":
+                _sharePointService.SetPreviousPageNumberValue();
+                var booksPrevious = await _sharePointService.GetBooksFromSharePointAsync();
+                await _bookService.UpdateBookButtons(_botClient, callbackQuery.Message, booksPrevious);
+                break;
+
+            default:
+                break;
+         
+        }
+    }
     private Task UnknownUpdateHandlerAsync(Update update)
     {
         return Task.CompletedTask;
