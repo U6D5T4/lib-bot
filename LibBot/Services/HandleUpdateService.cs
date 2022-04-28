@@ -1,6 +1,5 @@
 ﻿using LibBot.Services.Interfaces;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
@@ -15,14 +14,12 @@ public class HandleUpdateService : IHandleUpdateService
     private readonly IMessageService _messageService;
     private readonly IUserService _userService;
     private readonly ISharePointService _sharePointService;
-    private readonly IBookService _bookService;
-    public HandleUpdateService(ITelegramBotClient botClient, IMessageService messageService, IUserService userService, ISharePointService sharePointService, IBookService bookService)
+    public HandleUpdateService(ITelegramBotClient botClient, IMessageService messageService, IUserService userService, ISharePointService sharePointService)
     {
         _botClient = botClient;
         _messageService = messageService;
         _userService = userService;
         _sharePointService = sharePointService;
-        _bookService = bookService;
     }
 
     public async Task HandleAsync(Update update)
@@ -70,9 +67,18 @@ public class HandleUpdateService : IHandleUpdateService
         {
             if (await _userService.IsLoginValidAsync(message.Text))
             {
-                await _userService.UpdateUserEmailAsync(chatId, message.Text);
-                await CreateAndSendAuthCodeAsync(chatId, message);
-                await _messageService.AskToEnterAuthCodeAsync(_botClient, message);
+                var login = _userService.ParseLogin(message.Text);
+                var userData = await _sharePointService.GetUserDataFromSharePointAsync(login);
+                if (userData != null)
+                {
+                    await _userService.UpdateUserDataAsync(chatId, userData);
+                    await CreateAndSendAuthCodeAsync(chatId, message);
+                    await _messageService.AskToEnterAuthCodeAsync(_botClient, message);
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
             {
@@ -133,7 +139,7 @@ public class HandleUpdateService : IHandleUpdateService
             case "All Books":
                 _sharePointService.SetDefaultPageNumberValue();
                 var books = await _sharePointService.GetBooksFromSharePointAsync();
-                await _bookService.DisplayBookButtons(_botClient, message, books);
+                await _messageService.DisplayBookButtons(_botClient, message, books);
                 break;
 
             default:
@@ -141,8 +147,6 @@ public class HandleUpdateService : IHandleUpdateService
                 break;
 
         }
-
-        await SetCommand();
     }
     private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery)
     {
@@ -150,19 +154,30 @@ public class HandleUpdateService : IHandleUpdateService
         {
             case "Next":
                 _sharePointService.SetNextPageNumberValue();
-                var booksNext = await _sharePointService.GetBooksFromSharePointAsync();
-                await _bookService.UpdateBookButtons(_botClient, callbackQuery.Message, booksNext);
+                await UpdateInlineButtonsAsync(callbackQuery);
                 break;
 
             case "Previous":
                 _sharePointService.SetPreviousPageNumberValue();
-                var booksPrevious = await _sharePointService.GetBooksFromSharePointAsync();
-                await _bookService.UpdateBookButtons(_botClient, callbackQuery.Message, booksPrevious);
+                await UpdateInlineButtonsAsync(callbackQuery);
+                break;
+
+            case "No":
+                await _messageService.EditMessageAfterYesAndNoButtons(_botClient, callbackQuery);
+                await UpdateInlineButtonsAsync(callbackQuery);
+                break;
+
+            case "Yes":
+                var user = await _userService.GetUserByChatIdAsync(callbackQuery.Message.Chat.Id);
+                await _sharePointService.BorrowBook(callbackQuery.Message.Chat.Id, SharePointService.BorrowBookId, user);
+                await _messageService.EditMessageAfterYesAndNoButtons(_botClient, callbackQuery);
+                await UpdateInlineButtonsAsync(callbackQuery);
                 break;
 
             default:
+                SharePointService.BorrowBookId = int.Parse(callbackQuery.Data);
+                await _messageService.CreateYesAndNoButtons(_botClient, callbackQuery);
                 break;
-         
         }
     }
     private Task UnknownUpdateHandlerAsync(Update update)
@@ -180,19 +195,11 @@ public class HandleUpdateService : IHandleUpdateService
 
         return Task.CompletedTask;
     }
-    private Task SetCommand()
+
+    private async Task UpdateInlineButtonsAsync(CallbackQuery callbackQuery)
     {
-        return _botClient.SetMyCommandsAsync(new List<BotCommand>() {
-            new BotCommand()
-            {
-                Command = "first",
-                Description = "First command description"
-            },
-            new BotCommand()
-            {
-                Command = "second",
-                Description = "Second command description"
-            }
-        });
+        var books = await _sharePointService.GetBooksFromSharePointAsync();
+        await _messageService.UpdateBookButtons(callbackQuery.Message, books);
     }
+
 }

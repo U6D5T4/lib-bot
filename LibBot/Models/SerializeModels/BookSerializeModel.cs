@@ -19,42 +19,46 @@ namespace LibBot.Models.SharePointResponses;
 
         [JsonProperty("__next")]
         public Uri Next { get; set; }
+
+        [JsonProperty("GetContextWebInformation")]
+        public GetContextWebInformation GetContextWebInformation { get; set; }
+    }
+
+    public partial class GetContextWebInformation
+    {
+        [JsonProperty("FormDigestValue")]
+        public string FormDigestValue { get; set; }
     }
 
     public partial class Result
     {
-        [JsonProperty("__metadata")]
-        public Metadata Metadata { get; set; }
-
         [JsonProperty("Title")]
         public string Title { get; set; }
-}
 
-    public partial class Metadata
-    {
         [JsonProperty("id")]
-        public Guid Id { get; set; }
+        public int Id { get; set; }
     }
 
     public partial class Book
     {
         public static Book FromJson(string json) => JsonConvert.DeserializeObject<Book>(json, Converter.Settings);
+        public static string GetFormDigestValue(Book data) => data.D.GetContextWebInformation.FormDigestValue;
 
         public static List<BookDataResponse> GetBookDataResponse(Book data)
-        {
-            List<BookDataResponse> books = new List<BookDataResponse>();
-            var items = data.D.Results;
-
-            foreach (var item in items)
             {
-                BookDataResponse book = new BookDataResponse();
-                book.Title = item.Title;
-                book.Id = item.Metadata.Id;
-                books.Add(book);
-            }
+                List<BookDataResponse> books = new List<BookDataResponse>();
+                var items = data.D.Results;
 
-            return books;
-        }
+                foreach (var item in items)
+                {
+                    BookDataResponse book = new BookDataResponse();
+                    book.Title = item.Title;
+                    book.Id = item.Id;
+                    books.Add(book);
+                }
+
+                return books;
+            }
     }
 
     public static class Serialize
