@@ -115,14 +115,7 @@ public class SharePointService : ISharePointService
         client.DefaultRequestHeaders.Add("X-RequestDigest", formDigestValue);
 
         var httpResponse = await client.PostAsync($"_api/web/lists/GetByTitle('Books')/items({bookId})", httpContent);
-        if (httpResponse.IsSuccessStatusCode)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return httpResponse.IsSuccessStatusCode;
     }
 
     public  void SetNextPageNumberValue() => PageNumber += 8;
