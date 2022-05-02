@@ -55,7 +55,7 @@ public class SharePointService : ISharePointService
 
         var client = _clientFactory.CreateClient("SharePoint");
 
-        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id&$skiptoken=Paged=TRUE%26p_ID={pageNumber}&$top={AmountBooks}&$filter=BookReaderId eq {bookReaderId}");
+        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id&$skiptoken=Paged=TRUE%26p_ID={pageNumber * AmountBooks}&$top={AmountBooks}&$filter=BookReaderId eq {bookReaderId}");
 
 
         var contentsString = await httpResponse.Content.ReadAsStringAsync();
@@ -97,20 +97,5 @@ public class SharePointService : ISharePointService
 
         var httpResponse = await client.PostAsync($"_api/web/lists/GetByTitle('Books')/items({bookId})", httpContent);
         return httpResponse.IsSuccessStatusCode;
-    }
-
-
-    public int SetNextPageNumberValue(int pageNumber)
-    {
-        return pageNumber + AmountBooks;
-    }
-
-    public int SetPreviousPageNumberValue(int pageNumber)
-    {
-        if (pageNumber - AmountBooks > 0)
-            pageNumber -= AmountBooks;
-        else
-            pageNumber = 0;
-        return pageNumber;
     }
 }
