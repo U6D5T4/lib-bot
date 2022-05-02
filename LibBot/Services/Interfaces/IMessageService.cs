@@ -13,6 +13,7 @@ public interface IMessageService
     public Task<Message> AskToEnterOutlookLoginAsync(ITelegramBotClient bot, Message message);
     public Task<Message> AskToEnterAuthCodeAsync(ITelegramBotClient bot, Message message);
     public Task<Message> SayDefaultMessageAsync(ITelegramBotClient bot, Message message);
+    public Task<Message> AksToEnterSearchQueryAsync(ITelegramBotClient bot, Message message);
     public InlineKeyboardMarkup SetInlineKeyboardInTwoColumns(List<InlineKeyboardButton> buttons);
     public Task CreateYesAndNoButtons(CallbackQuery callbackQuery, string message);
     public List<InlineKeyboardButton> CreateBookButtons(List<BookDataResponse> books);

@@ -3,5 +3,6 @@
 public enum ChatState
 {
     AllBooks,
-    UserBooks
+    UserBooks,
+    SearchBooks
 }

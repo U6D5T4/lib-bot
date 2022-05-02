@@ -62,13 +62,18 @@ public class MessageService : IMessageService
             "Please, check your email and enter your auth code here.");
     }
 
+    public async Task<Message> AksToEnterSearchQueryAsync(ITelegramBotClient bot, Message message)
+    {
+        return await _botClient.SendTextMessageAsync(message.Chat.Id,
+            "Please, enter book's name or author's name.");
+    }
     public async Task EditMessageAfterYesAndNoButtons(ITelegramBotClient bot, CallbackQuery callbackQuery, string message)
     {
         await _botClient.EditMessageTextAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId, message);
     }
     public async Task<Message> SayDefaultMessageAsync(ITelegramBotClient bot, Message message)
     {
-        return await _botClient.SendTextMessageAsync(message.Chat.Id, "Hey, I'm LibBot. If you are seeing this message, You have completed authentication successfully!", replyMarkup: CreateReplyKeyboardMarkup("All Books", "My Books"));
+        return await _botClient.SendTextMessageAsync(message.Chat.Id, "Hey, I'm LibBot. If you are seeing this message, You have completed authentication successfully!", replyMarkup: CreateReplyKeyboardMarkup("All Books", "My Books", "Search Books"));
     }
     public InlineKeyboardMarkup SetInlineKeyboardInTwoColumns(List<InlineKeyboardButton> inlineButtons)
     {
@@ -117,7 +122,7 @@ public class MessageService : IMessageService
             buttons.Add(button);
         }
 
-        if (buttons.Count != 0)
+        if (buttons.Count == SharePointService.AmountBooks)
         {
             buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Previous", callbackData: "Previous"));
             buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Next", callbackData: "Next"));
