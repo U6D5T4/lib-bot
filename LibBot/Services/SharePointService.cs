@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using LibBot.Models;
 using LibBot.Models.SharePointRequests;
 using LibBot.Models.SharePointResponses;
 using LibBot.Services.Interfaces;
@@ -14,12 +13,7 @@ namespace LibBot.Services;
 public class SharePointService : ISharePointService
 {
     private readonly IHttpClientFactory _clientFactory;
-
-    public static int AmountBooks { get; set; } = 8;
-    public static int PageNumber { get; set; } = 0;
-
-    private const int PageSize = 8;
-    public static int BorrowBookId { get; set; }
+    public static int AmountBooks { get; } = 8;
 
 
     public SharePointService(IHttpClientFactory clientFactory)
@@ -55,30 +49,24 @@ public class SharePointService : ISharePointService
 
     }
 
-    public async Task<List<BookDataResponse>> GetBooksFromSharePointAsync()
+    public async Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, int? userId)
     {
-        var books = new List<BookDataResponse>();
+        var bookReaderId = userId is not null ? userId.ToString() : "null";
 
-        try
-        {
-            var client = _clientFactory.CreateClient("SharePoint");
+        var client = _clientFactory.CreateClient("SharePoint");
 
-            var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id&$skiptoken=Paged=TRUE%26p_ID={PageNumber}&$top={AmountBooks}&$filter=BookReaderId eq null");
-            if (!httpResponse.IsSuccessStatusCode)
-            {
-                throw new Exception();
-            }
+        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id&$skiptoken=Paged=TRUE%26p_ID={pageNumber * AmountBooks}&$top={AmountBooks}&$filter=BookReaderId eq {bookReaderId}");
 
-            var contentsString = await httpResponse.Content.ReadAsStringAsync();
-            var dataBooks = Book.FromJson(contentsString);
-            books = Book.GetBookDataResponse(dataBooks);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
 
-        return books.ToList();
+        var contentsString = await httpResponse.Content.ReadAsStringAsync();
+        var dataBooks = Book.FromJson(contentsString);
+
+        var result = Book.GetBookDataResponse(dataBooks);
+
+        if (result.Count == 0)
+            result = new List<BookDataResponse>();
+
+        return result;     
     }
 
     public async Task<string> GetFormDigestValueFromSharePointAsync()
@@ -95,19 +83,12 @@ public class SharePointService : ISharePointService
 
     }
 
-    public async Task<bool> BorrowBook(long chatId, int bookId, UserDbModel userData)
+    public async Task<bool> ChangeBookStatus(long chatId, int bookId, ChangeBookStatusRequest bookBorrowRequest)
     {
         var client = _clientFactory.CreateClient("SharePoint");
         var formDigestValue = await GetFormDigestValueFromSharePointAsync();
 
-        BookBorrowRequest borrowBook = new BookBorrowRequest();
-        borrowBook.EditorId = userData.SharePointId;
-        borrowBook.BookReaderId = userData.SharePointId;
-        borrowBook.BookReaderStringId = userData.SharePointId.ToString();
-        borrowBook.Modified = DateTime.UtcNow;
-        borrowBook.TakenToRead = DateTime.UtcNow;
-
-        string json = JsonConvert.SerializeObject(borrowBook);
+        string json = JsonConvert.SerializeObject(bookBorrowRequest);
         StringContent httpContent = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
         client.DefaultRequestHeaders.Add("If-Match", "*");
@@ -117,17 +98,4 @@ public class SharePointService : ISharePointService
         var httpResponse = await client.PostAsync($"_api/web/lists/GetByTitle('Books')/items({bookId})", httpContent);
         return httpResponse.IsSuccessStatusCode;
     }
-
-    public  void SetNextPageNumberValue() => PageNumber += 8;
-    
-    public  void SetPreviousPageNumberValue()
-    {
-        if (PageNumber - PageSize > 0)
-            PageNumber -= PageSize;
-        else
-            PageNumber = 0;
-    }
-    
-    public void  SetDefaultPageNumberValue() => PageNumber = 0;
-
 }
