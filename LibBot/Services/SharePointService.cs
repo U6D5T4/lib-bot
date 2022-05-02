@@ -13,8 +13,6 @@ namespace LibBot.Services;
 public class SharePointService : ISharePointService
 {
     private readonly IHttpClientFactory _clientFactory;
-
-    public static List<BookDataResponse> Books { get; set; }
     public static int AmountBooks { get; } = 8;
 
 
@@ -51,7 +49,7 @@ public class SharePointService : ISharePointService
 
     }
 
-    public async Task GetBooksFromSharePointAsync(int pageNumber, int? userId)
+    public async Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, int? userId)
     {
         var bookReaderId = userId is not null ? userId.ToString() : "null";
 
@@ -65,10 +63,10 @@ public class SharePointService : ISharePointService
 
         var result = Book.GetBookDataResponse(dataBooks);
 
-        if (result.Count == 0 && Books is null)
-            Books = new List<BookDataResponse>();
+        if (result.Count == 0)
+            result = new List<BookDataResponse>();
 
-        Books = result;     
+        return result;     
     }
 
     public async Task<string> GetFormDigestValueFromSharePointAsync()

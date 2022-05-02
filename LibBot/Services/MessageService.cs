@@ -94,16 +94,16 @@ public class MessageService : IMessageService
         await _botClient.EditMessageReplyMarkupAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId, replyMarkup: inlineKeyboard);
     }
 
-    public async Task<Message> DisplayBookButtons(Message message, string messageText)
+    public async Task<Message> DisplayBookButtons(Message message, string messageText, List<BookDataResponse> books)
     {
-        List<InlineKeyboardButton> buttons = CreateBookButtons(SharePointService.Books);
+        List<InlineKeyboardButton> buttons = CreateBookButtons(books);
         InlineKeyboardMarkup = SetInlineKeyboardInTwoColumns(buttons);
         return await _botClient.SendTextMessageAsync(message.Chat.Id, messageText, replyMarkup: InlineKeyboardMarkup);
     }
 
-    public async Task UpdateBookButtons(Message message)
+    public async Task UpdateBookButtons(Message message, List<BookDataResponse> books)
     {
-        List<InlineKeyboardButton> buttons = CreateBookButtons(SharePointService.Books);
+        List<InlineKeyboardButton> buttons = CreateBookButtons(books);
         InlineKeyboardMarkup = SetInlineKeyboardInTwoColumns(buttons);
         await _botClient.EditMessageReplyMarkupAsync(message.Chat.Id, message.MessageId, InlineKeyboardMarkup);
     }
