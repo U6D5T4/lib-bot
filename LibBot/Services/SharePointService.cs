@@ -73,7 +73,7 @@ public class SharePointService : ISharePointService
     {
         var client = _clientFactory.CreateClient("SharePoint");
 
-        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id&$skiptoken=Paged=TRUE%26p_ID={pageNumber * AmountBooks}&$top={AmountBooks}&$filter=BookReaderId eq {userId}");
+        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id,TakenToRead&$skiptoken=Paged=TRUE%26p_ID={pageNumber * AmountBooks}&$top={AmountBooks}&$filter=BookReaderId eq {userId}");
 
 
         var contentsString = await httpResponse.Content.ReadAsStringAsync();

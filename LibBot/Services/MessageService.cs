@@ -1,5 +1,6 @@
 ﻿using LibBot.Models.SharePointResponses;
 using LibBot.Services.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -11,9 +12,6 @@ namespace LibBot.Services;
 public class MessageService : IMessageService
 {
     private readonly ITelegramBotClient _botClient;
-
-    private InlineKeyboardMarkup InlineKeyboardMarkup { get; set; }
-
     public MessageService(ITelegramBotClient botClient)
     {
         _botClient = botClient;
@@ -108,15 +106,15 @@ public class MessageService : IMessageService
     public async Task<Message> DisplayBookButtons(Message message, string messageText, List<BookDataResponse> books)
     {
         List<InlineKeyboardButton> buttons = CreateBookButtons(books);
-        InlineKeyboardMarkup = SetInlineKeyboardInTwoColumns(buttons);
-        return await _botClient.SendTextMessageAsync(message.Chat.Id, messageText, replyMarkup: InlineKeyboardMarkup);
+        var inlineKeyboardMarkup = SetInlineKeyboardInTwoColumns(buttons);
+        return await _botClient.SendTextMessageAsync(message.Chat.Id, messageText, replyMarkup: inlineKeyboardMarkup);
     }
 
     public async Task UpdateBookButtons(Message message, List<BookDataResponse> books)
     {
         List<InlineKeyboardButton> buttons = CreateBookButtons(books);
-        InlineKeyboardMarkup = SetInlineKeyboardInTwoColumns(buttons);
-        await _botClient.EditMessageReplyMarkupAsync(message.Chat.Id, message.MessageId, InlineKeyboardMarkup);
+        var inlineKeyboardMarkup = SetInlineKeyboardInTwoColumns(buttons);
+        await _botClient.EditMessageReplyMarkupAsync(message.Chat.Id, message.MessageId, inlineKeyboardMarkup);
     }
 
     public List<InlineKeyboardButton> CreateBookButtons(List<BookDataResponse> books)
@@ -124,7 +122,16 @@ public class MessageService : IMessageService
         List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
         foreach (BookDataResponse book in books)
         {
-            var buttonText = book.BookReaderId is null ? book.Title : "(borrowed)" + book.Title;
+            var buttonText = string.Empty;
+            if (book.TakenToRead.ToShortDateString() != new DateTime(01, 01, 0001).ToShortDateString())
+            {
+                var borrowedDate = book.TakenToRead.AddMonths(2).ToLocalTime().ToShortDateString();
+                buttonText = book.Title + " Due Date:" + borrowedDate;
+            }
+            else
+            {
+                buttonText = book.BookReaderId is null ? book.Title : "(borrowed)" + book.Title;
+            }
             var callbackData = book.BookReaderId is null ? book.Id.ToString() : "Borrowed";
             var button = InlineKeyboardButton.WithCallbackData(text: buttonText, callbackData: callbackData);
             buttons.Add(button);
