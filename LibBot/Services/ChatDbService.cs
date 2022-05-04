@@ -19,7 +19,7 @@ public class ChatDbService: IChatDbService
 
     public async Task CreateItemAsync(ChatDbModel item)
     {
-        await _client.SetAsync(_dbName + item.ChatId + '/' + item.InlineMessageId, item);
+        await _client.SetAsync(_dbName + item.ChatId + '/' + item.MessageId, item);
     }
 
     public async Task<ChatDbModel> ReadItemAsync(long chatId, long inlineMessageId)
@@ -31,7 +31,7 @@ public class ChatDbService: IChatDbService
 
     public async Task UpdateItemAsync(ChatDbModel item) 
     {
-        await _client.UpdateAsync(_dbName + item.ChatId + '/' + item.InlineMessageId, item);
+        await _client.UpdateAsync(_dbName + item.ChatId + '/' + item.MessageId, item);
     }
 
     public async Task DeleteItemAsync(long chatId, long inlineMessageId)
