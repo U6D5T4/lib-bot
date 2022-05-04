@@ -166,9 +166,7 @@ public class HandleUpdateService : IHandleUpdateService
                 var chatInfo = await _chatService.GetChatInfoAsync(message.Chat.Id, message.MessageId  - 2);
                 if (chatInfo is not null && chatInfo.ChatState == ChatState.SearchBooks)
                 {
-
                     chatInfo.SearchQuery =  HttpUtility.UrlEncode(message.Text.Trim());
-
                     await _chatService.SaveChatInfoAsync(chatInfo);
                     var searchBooks = await _sharePointService.GetBooksFromSharePointAsync(chatInfo.PageNumber, chatInfo.SearchQuery);
                     await _messageService.DisplayBookButtons(message, "This is the result of your search query.", searchBooks);
