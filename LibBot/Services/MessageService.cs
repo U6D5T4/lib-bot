@@ -1,5 +1,6 @@
 ﻿using LibBot.Models.SharePointResponses;
 using LibBot.Services.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -121,8 +122,16 @@ public class MessageService : IMessageService
         List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
         foreach (BookDataResponse book in books)
         {
-            var borrowedDate = book.TakenToRead.AddMonths(2).ToLocalTime().ToShortDateString();
-            var buttonText = book.BookReaderId is null ? book.Title + " Due Date:" + borrowedDate: "(borrowed)" + book.Title;
+            var buttonText = string.Empty;
+            if (book.TakenToRead.ToShortDateString() != new DateTime(01, 01, 0001).ToShortDateString())
+            {
+                var borrowedDate = book.TakenToRead.AddMonths(2).ToLocalTime().ToShortDateString();
+                buttonText = book.Title + " Due Date:" + borrowedDate;
+            }
+            else
+            {
+                buttonText = book.BookReaderId is null ? book.Title : "(borrowed)" + book.Title;
+            }
             var callbackData = book.BookReaderId is null ? book.Id.ToString() : "Borrowed";
             var button = InlineKeyboardButton.WithCallbackData(text: buttonText, callbackData: callbackData);
             buttons.Add(button);
