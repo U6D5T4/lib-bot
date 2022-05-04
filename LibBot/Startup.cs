@@ -39,6 +39,9 @@ public class Startup
         services.AddScoped<IUserDbService, UserDbService>();
         services.AddScoped<ICodeDbService, CodeDbService>();
         services.AddScoped<IConfigureDb, ConfigureDb>();
+        services.AddScoped<IChatDbService, ChatDbService>();
+        services.AddScoped<IChatService, ChatService>();
+ 
 
         services.Configure<EmailConfiguration>(Configuration.GetSection("EmailConfiguration"));
         services.Configure<DbConfiguration>(Configuration.GetSection("DbConfiguration"));

@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
-using System.Net.Mail;
 using System.Threading.Tasks;
 using LibBot.Models;
 using LibBot.Models.Configurations;
+using LibBot.Models.SharePointResponses;
 using LibBot.Services.Interfaces;
 using Microsoft.Extensions.Options;
 
@@ -114,13 +114,13 @@ public class UserService : IUserService
         return code is null || code.ExpiryDate < DateTime.UtcNow;
     }
 
-    public async Task UpdateUserEmailAsync(long chatId, string login)
+    public async Task UpdateUserDataAsync(long chatId, UserDataResponse userData)
     {
         var user = await GetUserByChatIdAsync(chatId);
-        user.Email = ParseLogin(login);
+        user.Email = userData.Email;
+        user.SharePointId = userData.Id;
         await _userDbService.UpdateItemAsync(user);
     }
-
     public bool TryParseAuthCode(string authCode, out int result)
     {
         result = -1;
@@ -134,9 +134,9 @@ public class UserService : IUserService
         return true;
     }
 
-    private string ParseLogin(string login) => login.EndsWith(_domainName) ? login : login + _domainName;
+    public string ParseLogin(string login) => login.EndsWith(_domainName) ? login : login + _domainName;
 
-    private async Task<UserDbModel> GetUserByChatIdAsync(long chatId)
+    public async Task<UserDbModel> GetUserByChatIdAsync(long chatId)
     {
         return await _userDbService.ReadItemAsync(chatId);
     }
