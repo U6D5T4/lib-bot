@@ -12,4 +12,5 @@ public interface ISharePointService
     public Task<string> GetFormDigestValueFromSharePointAsync();
     public Task<UserDataResponse> GetUserDataFromSharePointAsync(string login);
     public Task<bool> ChangeBookStatus(long chatId, int bookId, ChangeBookStatusRequest changeBookStatusRequest);
+    public Task<List<BookDataResponse>> GetBooksFromSharePointWithSearchAsync(int pageNumber, string searchQuery);
 }

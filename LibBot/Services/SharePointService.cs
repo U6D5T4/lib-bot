@@ -69,6 +69,22 @@ public class SharePointService : ISharePointService
         return result;     
     }
 
+
+    public async Task<List<BookDataResponse>> GetBooksFromSharePointWithSearchAsync(int pageNumber, string searchQuery)
+    {
+        var client = _clientFactory.CreateClient("SharePoint");
+
+        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id&$skiptoken=Paged=TRUE%26p_ID={pageNumber * AmountBooks}&$top={AmountBooks}&$filter=substringof('{searchQuery}', Title)");
+        var contentsString = await httpResponse.Content.ReadAsStringAsync();
+        var dataBooks = Book.FromJson(contentsString);
+
+        var result = Book.GetBookDataResponse(dataBooks);
+
+        if (result.Count == 0)
+            result = new List<BookDataResponse>();
+
+        return result;
+    }
     public async Task<string> GetFormDigestValueFromSharePointAsync()
     {
         var client = _clientFactory.CreateClient("SharePoint");
