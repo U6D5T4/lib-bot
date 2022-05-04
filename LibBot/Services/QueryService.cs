@@ -10,23 +10,23 @@ public class QueryService : IQueryService
     {
         _queryDbService = queryDbService;
     }
-    public async Task DeleteChatInfoAsync(long chatId)
+    public async Task DeleteChatInfoAsync(long chatId, long messageId)
     {
-        await _queryDbService.DeleteItemAsync(chatId);
+        await _queryDbService.DeleteItemAsync(chatId, messageId);
     }
 
-    public async Task<string> GetQueryAsync(long chatId)
+    public async Task<string> GetQueryAsync(long chatId, long messageId)
     {
-       return await _queryDbService.ReadItemAsync(chatId);
+       return await _queryDbService.ReadItemAsync(chatId, messageId);
     }
 
-    public async Task SaveQueryAsync(long chatId, string query)
+    public async Task SaveQueryAsync(long chatId, long messageId, string query)
     {
-        await _queryDbService.CreateItemAsync(chatId, query);
+        await _queryDbService.CreateItemAsync(chatId, messageId, query);
     }
 
-    public async Task UpdateQueryAsync(long chatId, string query)
+    public async Task UpdateQueryAsync(long chatId, long messageId, string query)
     {
-        await _queryDbService.UpdateItemAsync(chatId, query);
+        await _queryDbService.UpdateItemAsync(chatId, messageId, query);
     }
 }

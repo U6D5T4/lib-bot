@@ -4,9 +4,9 @@ namespace LibBot.Services.Interfaces;
 
 public interface IQueryDbService
 {
-    public Task CreateItemAsync(long chatid, string query);
-    public Task UpdateItemAsync(long chatid, string query);
-    public Task DeleteItemAsync(long chatid);
-    public Task<string> ReadItemAsync(long chatid);
+    public Task CreateItemAsync(long chatId, long messageId, string query);
+    public Task UpdateItemAsync(long chatId, long messageId, string query);
+    public Task DeleteItemAsync(long chatId, long messageId);
+    public Task<string> ReadItemAsync(long chatId, long messageId);
 
 }

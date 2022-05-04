@@ -67,6 +67,12 @@ public class MessageService : IMessageService
         return await _botClient.SendTextMessageAsync(message.Chat.Id,
             "Please, enter book's name or author's name.");
     }
+
+    public async Task<Message> SayThisBookIsAlreadyBorrowAsync(ITelegramBotClient bot, Message message)
+    {
+        return await _botClient.SendTextMessageAsync(message.Chat.Id,
+            "Sorry, this book is already borrowed.");
+    }
     public async Task EditMessageAfterYesAndNoButtons(ITelegramBotClient bot, CallbackQuery callbackQuery, string message)
     {
         await _botClient.EditMessageTextAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId, message);
@@ -118,7 +124,9 @@ public class MessageService : IMessageService
         List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
         foreach (BookDataResponse book in books)
         {
-            var button = InlineKeyboardButton.WithCallbackData(text: book.Title, callbackData: book.Id.ToString());
+            var buttonText = book.BookReaderId is null ? book.Title : "(borrowed)" + book.Title;
+            var callbackData = book.BookReaderId is null ? book.Id.ToString() : "Borrowed";
+            var button = InlineKeyboardButton.WithCallbackData(text: buttonText, callbackData: callbackData);
             buttons.Add(button);
         }
 
