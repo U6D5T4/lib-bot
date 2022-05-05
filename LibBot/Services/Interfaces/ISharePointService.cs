@@ -7,7 +7,7 @@ namespace LibBot.Services.Interfaces;
 
 public interface ISharePointService
 {
-    List<string> BookPaths { get; }
+    Task<string[]> GetBookPathsAsync();
     Task<bool> IsUserExistInSharePointAsync(string login);
     Task<UserDataResponse> GetUserDataFromSharePointAsync(string login);
     Task<bool> ChangeBookStatus(long chatId, int bookId, ChangeBookStatusRequest changeBookStatusRequest);

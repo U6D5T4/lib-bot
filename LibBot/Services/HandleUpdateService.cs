@@ -4,6 +4,7 @@ using LibBot.Models.SharePointResponses;
 using LibBot.Services.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using Telegram.Bot;
@@ -202,24 +203,28 @@ public class HandleUpdateService : IHandleUpdateService
                 break;
 
             case "Filter by paths":
-                await _messageService.UpdateInlineButtonsWithMessage(data.ChatId, data.MessageId,
-                    "Choose paths for books.", _sharePointService.BookPaths.ToArray());
-                data.ChatState = ChatState.Filters;
-                await _chatService.UpdateChatInfoAsync(data);
-                break;
-
-            case "Clear filters":
-                if (data.Filters is null || data.Filters.Count == 0)
                 {
-                    return;
+                    var bookPaths = await _sharePointService.GetBookPathsAsync();
+                    await _messageService.UpdateInlineButtonsWithMessage(data.ChatId, data.MessageId,
+                        "Choose paths for books.", bookPaths);
+                    data.ChatState = ChatState.Filters;
+                    await _chatService.UpdateChatInfoAsync(data);
+                    break;
                 }
+            case "Clear filters":
+                {
+                    if (data.Filters is null || data.Filters.Count == 0)
+                    {
+                        return;
+                    }
 
-                data.Filters = null;
-                await _messageService.UpdateInlineButtonsWithMessage(data.ChatId, data.MessageId,
-                    "Choose paths for books.", _sharePointService.BookPaths.ToArray());
-                await _chatService.UpdateChatInfoAsync(data);
-                break;
-
+                    data.Filters = null;
+                    var bookPaths = await _sharePointService.GetBookPathsAsync();
+                    await _messageService.UpdateInlineButtonsWithMessage(data.ChatId, data.MessageId,
+                        "Choose paths for books.", bookPaths);
+                    await _chatService.UpdateChatInfoAsync(data);
+                    break;
+                }
             case "Next":
                 if (data.ChatState == ChatState.AllBooks)
                 {
@@ -351,11 +356,8 @@ public class HandleUpdateService : IHandleUpdateService
                     data.Filters = data.Filters is null ? new List<string>() : data.Filters;
                     data.Filters.Add(callbackQuery.Data);
                     await _chatService.UpdateChatInfoAsync(data);
-                    var filters = _sharePointService.BookPaths;
-                    foreach (var filter in data.Filters)
-                    {
-                        filters.Remove(filter);
-                    }
+                    var filters = await _sharePointService.GetBookPathsAsync();
+                    filters = filters.Except(data.Filters).ToArray();
 
                     await _messageService.UpdateInlineButtonsWithMessage(data.ChatId, data.MessageId,
                         $"Choose paths for books.{Environment.NewLine}" + GetFiltersAsAStringMessage(data.Filters), filters.ToArray());

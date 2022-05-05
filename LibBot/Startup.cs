@@ -42,14 +42,13 @@ public class Startup
         services.AddScoped<IConfigureDb, ConfigureDb>();
         services.AddScoped<IChatDbService, ChatDbService>();
         services.AddScoped<IChatService, ChatService>();
- 
+        services.AddScoped<IFileService, FileService>();
 
         services.Configure<EmailConfiguration>(Configuration.GetSection("EmailConfiguration"));
         services.Configure<DbConfiguration>(Configuration.GetSection("DbConfiguration"));
         services.Configure<BotConfiguration>(Configuration.GetSection("BotConfiguration"));
         services.Configure<BotCredentialsConfiguration>(Configuration.GetSection("BotCredentials"));
         services.Configure<SharePointConfiguration>(Configuration.GetSection("SharePointConfiguration"));
-        services.Configure<BookPaths>(Configuration.GetSection("BookPaths"));
 
         services.AddControllers().AddNewtonsoftJson();
     }
