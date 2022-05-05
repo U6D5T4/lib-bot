@@ -176,6 +176,8 @@ public class HandleUpdateService : IHandleUpdateService
                     await _chatService.SaveChatInfoAsync(chatInfo);
                     var searchBooks = await _sharePointService.GetBooksFromSharePointAsync(chatInfo.PageNumber, chatInfo.SearchQuery);
                     await _messageService.DisplayBookButtons(chatInfo.ChatId, "This is the result of your search query.", searchBooks);
+                    else
+                    await _messageService.DisplayBookButtons(message, "There are no such books in our library.", searchBooks);
                 }
                 else
                     await _messageService.SayDefaultMessageAsync(_botClient, message);
