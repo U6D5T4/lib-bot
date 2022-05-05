@@ -1,4 +1,5 @@
 using LibBot.ConfigureServicesExtensions;
+using LibBot.Models;
 using LibBot.Models.Configurations;
 using LibBot.Services;
 using LibBot.Services.Interfaces;
@@ -48,6 +49,7 @@ public class Startup
         services.Configure<BotConfiguration>(Configuration.GetSection("BotConfiguration"));
         services.Configure<BotCredentialsConfiguration>(Configuration.GetSection("BotCredentials"));
         services.Configure<SharePointConfiguration>(Configuration.GetSection("SharePointConfiguration"));
+        services.Configure<BookPaths>(Configuration.GetSection("BookPaths"));
 
         services.AddControllers().AddNewtonsoftJson();
     }
