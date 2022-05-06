@@ -4,5 +4,6 @@ public enum ChatState
 {
     AllBooks,
     UserBooks,
-    SearchBooks
+    SearchBooks,
+    Filters
 }

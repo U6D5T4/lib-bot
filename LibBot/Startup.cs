@@ -1,4 +1,5 @@
 using LibBot.ConfigureServicesExtensions;
+using LibBot.Models;
 using LibBot.Models.Configurations;
 using LibBot.Services;
 using LibBot.Services.Interfaces;
@@ -25,7 +26,9 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddHostedService<ConfigureWebhook>();
-      
+        services.AddHostedService<ReminderHostedService>();
+
+
         services.AddSharePointHttpClient(Configuration);
         services.AddHttpClient("tgwebhook")
           .AddTypedClient<ITelegramBotClient>(httpClient
@@ -41,7 +44,7 @@ public class Startup
         services.AddScoped<IConfigureDb, ConfigureDb>();
         services.AddScoped<IChatDbService, ChatDbService>();
         services.AddScoped<IChatService, ChatService>();
- 
+        services.AddScoped<IFileService, FileService>();
 
         services.Configure<EmailConfiguration>(Configuration.GetSection("EmailConfiguration"));
         services.Configure<DbConfiguration>(Configuration.GetSection("DbConfiguration"));

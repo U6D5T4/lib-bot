@@ -13,12 +13,15 @@ namespace LibBot.Services;
 public class SharePointService : ISharePointService
 {
     private readonly IHttpClientFactory _clientFactory;
+    private readonly IFileService _fileService;
+    
     public static int AmountBooks { get; } = 8;
+    private string[] _bookPaths;
 
-
-    public SharePointService(IHttpClientFactory clientFactory)
+    public SharePointService(IHttpClientFactory clientFactory, IFileService fileService)
     {
         _clientFactory = clientFactory;
+        _fileService = fileService;
     }
 
     public async Task<bool> IsUserExistInSharePointAsync(string login)
@@ -46,7 +49,6 @@ public class SharePointService : ISharePointService
         var userDataString = string.Join("", contentsString.SkipWhile(ch => ch != '[').Skip(1).TakeWhile(ch => ch != ']'));
         var userData = JsonConvert.DeserializeObject<UserDataResponse>(userDataString);
         return userData;
-
     }
 
     public async Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber)
@@ -54,7 +56,6 @@ public class SharePointService : ISharePointService
         var client = _clientFactory.CreateClient("SharePoint");
 
         var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id,BookReaderId&$skiptoken=Paged=TRUE%26p_ID={pageNumber * AmountBooks}&$top={AmountBooks}");
-
 
         var contentsString = await httpResponse.Content.ReadAsStringAsync();
         var dataBooks = Book.FromJson(contentsString);
@@ -64,7 +65,7 @@ public class SharePointService : ISharePointService
         if (result.Count == 0)
             result = new List<BookDataResponse>();
 
-        return result;     
+        return result;
     }
 
 
@@ -72,9 +73,8 @@ public class SharePointService : ISharePointService
     public async Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, int userId)
     {
         var client = _clientFactory.CreateClient("SharePoint");
-
-        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id&$skiptoken=Paged=TRUE%26p_ID={pageNumber * AmountBooks}&$top={AmountBooks}&$filter=BookReaderId eq {userId}");
-
+        
+        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id,TakenToRead&$skiptoken=Paged=TRUE%26p_ID={pageNumber * AmountBooks}&$top={AmountBooks}&$filter=BookReaderId eq {userId}");
 
         var contentsString = await httpResponse.Content.ReadAsStringAsync();
         var dataBooks = Book.FromJson(contentsString);
@@ -102,18 +102,32 @@ public class SharePointService : ISharePointService
 
         return result;
     }
-    public async Task<string> GetFormDigestValueFromSharePointAsync()
+
+    public async Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, List<string> filters)
     {
         var client = _clientFactory.CreateClient("SharePoint");
-        var emptyJson = new { };
-        string json = JsonConvert.SerializeObject(emptyJson);
-        StringContent httpContent = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-        var httpResponse = await client.PostAsync("https://u6.itechart-group.com:8443/_api/contextinfo", httpContent);
-        var contentsString = await httpResponse.Content.ReadAsStringAsync();
-        var dataformDigestValue = Book.FromJson(contentsString);
-        var formDigestValue = Book.GetFormDigestValue(dataformDigestValue);
-        return formDigestValue;
 
+        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id,BookReaderId,Technology&$top=300");
+        var contentsString = await httpResponse.Content.ReadAsStringAsync();
+        var dataBooks = Book.FromJson(contentsString);
+
+        var result = Book.GetBookDataResponse(dataBooks);
+
+        if (result.Count == 0)
+            result = new List<BookDataResponse>();
+
+        var filteredBooks = filters is null ? result : result.Where(book => filters.Any(filter => book.Technology.Results.Any(tech => tech.Label == filter)));
+        return filteredBooks.Skip(pageNumber * AmountBooks).Take(AmountBooks).ToList();
+    }
+
+    public async Task<string[]> GetBookPathsAsync()
+    {
+        if (_bookPaths is null)
+        {
+            _bookPaths = await _fileService.GetBookPathsFromFileAsync("bookPaths.txt");
+        }
+
+        return _bookPaths;
     }
 
     public async Task<bool> ChangeBookStatus(long chatId, int bookId, ChangeBookStatusRequest bookBorrowRequest)
@@ -130,5 +144,18 @@ public class SharePointService : ISharePointService
 
         var httpResponse = await client.PostAsync($"_api/web/lists/GetByTitle('Books')/items({bookId})", httpContent);
         return httpResponse.IsSuccessStatusCode;
+    }
+
+    private async Task<string> GetFormDigestValueFromSharePointAsync()
+    {
+        var client = _clientFactory.CreateClient("SharePoint");
+        var emptyJson = new { };
+        string json = JsonConvert.SerializeObject(emptyJson);
+        StringContent httpContent = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+        var httpResponse = await client.PostAsync("https://u6.itechart-group.com:8443/_api/contextinfo", httpContent);
+        var contentsString = await httpResponse.Content.ReadAsStringAsync();
+        var dataformDigestValue = Book.FromJson(contentsString);
+        var formDigestValue = Book.GetFormDigestValue(dataformDigestValue);
+        return formDigestValue;
     }
 }

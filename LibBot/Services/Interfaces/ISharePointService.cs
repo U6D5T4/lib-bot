@@ -7,12 +7,12 @@ namespace LibBot.Services.Interfaces;
 
 public interface ISharePointService
 {
-    public Task<bool> IsUserExistInSharePointAsync(string login);
-    public Task<string> GetFormDigestValueFromSharePointAsync();
-    public Task<UserDataResponse> GetUserDataFromSharePointAsync(string login);
-    public Task<bool> ChangeBookStatus(long chatId, int bookId, ChangeBookStatusRequest changeBookStatusRequest);
-    public Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber);
-    public Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, int userId);
-    public Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, string searchQuery);
-
+    Task<string[]> GetBookPathsAsync();
+    Task<bool> IsUserExistInSharePointAsync(string login);
+    Task<UserDataResponse> GetUserDataFromSharePointAsync(string login);
+    Task<bool> ChangeBookStatus(long chatId, int bookId, ChangeBookStatusRequest changeBookStatusRequest);
+    Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber);
+    Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, int userId);
+    Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, string searchQuery);
+    Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, List<string> filters);
 }
