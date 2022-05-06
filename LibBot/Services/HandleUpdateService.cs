@@ -74,7 +74,7 @@ public class HandleUpdateService : IHandleUpdateService
 
         if (!await _userService.WasAuthenticationCodeSendForUserAsync(chatId))
         {
-            await GenerateAndSendAuthCodeAsync(message);
+           return await GenerateAndSendAuthCodeAsync(message);
         }
 
         if (await _userService.IsCodeLifetimeExpiredAsync(chatId))
@@ -106,10 +106,6 @@ public class HandleUpdateService : IHandleUpdateService
                 await _userService.UpdateUserDataAsync(message.Chat.Id, userData);
                 await CreateAndSendAuthCodeAsync(message.Chat.Id, message);
                 await _messageService.AskToEnterAuthCodeAsync(_botClient, message);
-            }
-            else
-            {
-                return false;
             }
         }
         else
