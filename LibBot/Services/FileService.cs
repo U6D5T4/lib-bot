@@ -18,7 +18,8 @@ public class FileService : IFileService
         {
             var booksPaths = await streamReader.ReadToEndAsync();
             streamReader.Close();
-            return booksPaths.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+            var separator = booksPaths.Contains("\r\n") ? "\r\n" : "\n";
+            return booksPaths.Split(separator, StringSplitOptions.RemoveEmptyEntries);
         }
     }
 }
