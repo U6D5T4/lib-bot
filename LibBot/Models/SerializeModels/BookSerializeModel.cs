@@ -78,6 +78,7 @@ public partial class Book
             book.BookReaderId = item.BookReaderId;
             book.TakenToRead = item.TakenToRead;
             book.Technology = item.Technology;
+
             books.Add(book);
         }
 

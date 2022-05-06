@@ -1,4 +1,4 @@
-﻿using LibBot.Models.SharePointResponses;
+using LibBot.Models.SharePointResponses;
 using LibBot.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -13,6 +13,7 @@ namespace LibBot.Services;
 public class MessageService : IMessageService
 {
     private readonly ITelegramBotClient _botClient;
+    
     public MessageService(ITelegramBotClient botClient)
     {
         _botClient = botClient;
@@ -40,7 +41,7 @@ public class MessageService : IMessageService
         {
             buttons.Add(InlineKeyboardButton.WithCallbackData(text: inlineButton.Key, callbackData: inlineButton.Value));
         }
-
+        
         return new InlineKeyboardMarkup(buttons);
     }
 
@@ -72,14 +73,17 @@ public class MessageService : IMessageService
         return await _botClient.SendTextMessageAsync(message.Chat.Id,
             "Sorry, this book is already borrowed.");
     }
+    
     public async Task EditMessageAfterYesAndNoButtons(ITelegramBotClient bot, CallbackQuery callbackQuery, string message)
     {
         await _botClient.EditMessageTextAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId, message);
     }
+    
     public async Task<Message> SayDefaultMessageAsync(ITelegramBotClient bot, Message message)
     {
         return await _botClient.SendTextMessageAsync(message.Chat.Id, "Hey, I'm LibBot. If you are seeing this message, You have completed authentication successfully!", replyMarkup: CreateReplyKeyboardMarkup("Show all books", "My Books", "Search Books"));
     }
+    
     private InlineKeyboardMarkup SetInlineKeyboardInTwoColumns(List<InlineKeyboardButton> inlineButtons)
     {
         var inlineButtonsTwoColumns = new List<InlineKeyboardButton[]>();
@@ -145,6 +149,7 @@ public class MessageService : IMessageService
             {
                 buttonText = book.BookReaderId is null ? book.Title : "(borrowed)" + book.Title;
             }
+            
             var callbackData = book.BookReaderId is null ? book.Id.ToString() : "Borrowed";
             var button = InlineKeyboardButton.WithCallbackData(text: buttonText, callbackData: callbackData);
             buttons.Add(button);

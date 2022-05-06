@@ -14,6 +14,7 @@ public class SharePointService : ISharePointService
 {
     private readonly IHttpClientFactory _clientFactory;
     private readonly IFileService _fileService;
+    
     public static int AmountBooks { get; } = 8;
     private string[] _bookPaths;
 
@@ -72,9 +73,8 @@ public class SharePointService : ISharePointService
     public async Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, int userId)
     {
         var client = _clientFactory.CreateClient("SharePoint");
-
+        
         var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id,TakenToRead&$skiptoken=Paged=TRUE%26p_ID={pageNumber * AmountBooks}&$top={AmountBooks}&$filter=BookReaderId eq {userId}");
-
 
         var contentsString = await httpResponse.Content.ReadAsStringAsync();
         var dataBooks = Book.FromJson(contentsString);
@@ -145,6 +145,7 @@ public class SharePointService : ISharePointService
         var httpResponse = await client.PostAsync($"_api/web/lists/GetByTitle('Books')/items({bookId})", httpContent);
         return httpResponse.IsSuccessStatusCode;
     }
+
     private async Task<string> GetFormDigestValueFromSharePointAsync()
     {
         var client = _clientFactory.CreateClient("SharePoint");
