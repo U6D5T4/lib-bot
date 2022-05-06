@@ -25,7 +25,9 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddHostedService<ConfigureWebhook>();
-      
+        services.AddHostedService<ReminderHostedService>();
+
+
         services.AddSharePointHttpClient(Configuration);
         services.AddHttpClient("tgwebhook")
           .AddTypedClient<ITelegramBotClient>(httpClient
@@ -41,7 +43,6 @@ public class Startup
         services.AddScoped<IConfigureDb, ConfigureDb>();
         services.AddScoped<IChatDbService, ChatDbService>();
         services.AddScoped<IChatService, ChatService>();
- 
 
         services.Configure<EmailConfiguration>(Configuration.GetSection("EmailConfiguration"));
         services.Configure<DbConfiguration>(Configuration.GetSection("DbConfiguration"));
