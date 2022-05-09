@@ -1,6 +1,9 @@
 using LibBot.ConfigureServicesExtensions;
+using LibBot.JobFactory;
+using LibBot.Jobs;
 using LibBot.Models;
 using LibBot.Models.Configurations;
+using LibBot.Schedular;
 using LibBot.Services;
 using LibBot.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
@@ -8,6 +11,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Quartz;
+using Quartz.Impl;
+using Quartz.Spi;
+using System;
+using System.Collections.Generic;
 using Telegram.Bot;
 
 namespace LibBot;
@@ -26,7 +34,6 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddHostedService<ConfigureWebhook>();
-        services.AddHostedService<ReminderHostedService>();
 
 
         services.AddSharePointHttpClient(Configuration);
@@ -51,6 +58,23 @@ public class Startup
         services.Configure<BotConfiguration>(Configuration.GetSection("BotConfiguration"));
         services.Configure<BotCredentialsConfiguration>(Configuration.GetSection("BotCredentials"));
         services.Configure<SharePointConfiguration>(Configuration.GetSection("SharePointConfiguration"));
+
+
+        services.AddSingleton<IJobFactory, MyJobFactory>();
+        services.AddSingleton<ISchedulerFactory, StdSchedulerFactory>();
+
+        #region Adding JobType
+        services.AddSingleton<NotificationJob>();
+        #endregion
+
+        #region Adding Jobs 
+        List<JobMetadata> jobMetadatas = new List<JobMetadata>();
+        jobMetadatas.Add(new JobMetadata(Guid.NewGuid(), typeof(NotificationJob), "Notify Job", "0 0 12 * * ?"));
+
+        services.AddSingleton(jobMetadatas);
+        #endregion
+
+        services.AddHostedService<NotificationSchedular>();
 
         services.AddControllers().AddNewtonsoftJson();
     }
