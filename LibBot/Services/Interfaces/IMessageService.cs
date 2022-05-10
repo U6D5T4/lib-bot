@@ -16,7 +16,7 @@ public interface IMessageService
     Task<Message> AksToEnterSearchQueryAsync(ITelegramBotClient bot, Message message);
     Task<Message> SayThisBookIsAlreadyBorrowAsync(ITelegramBotClient bot, Message message);
     Task CreateYesAndNoButtons(CallbackQuery callbackQuery, string message);
-    List<InlineKeyboardButton> CreateBookButtons(List<BookDataResponse> books);
+    List<InlineKeyboardButton> CreateBookButtons(List<BookDataResponse> books, bool firstPage);
     Task<Message> DisplayBookButtons(long chatId, string messageText, List<BookDataResponse> books);
     Task UpdateBookButtons(Message message, List<BookDataResponse> books);
     Task UpdateBookButtonsAndMessageText(long chatId, int messageId, string messageText, List<BookDataResponse> books);

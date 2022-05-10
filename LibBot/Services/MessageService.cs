@@ -115,26 +115,26 @@ public class MessageService : IMessageService
 
     public async Task<Message> DisplayBookButtons(long chatId, string messageText, List<BookDataResponse> books)
     {
-        List<InlineKeyboardButton> buttons = CreateBookButtons(books);
+        List<InlineKeyboardButton> buttons = CreateBookButtons(books, true);
         var inlineKeyboardMarkup = SetInlineKeyboardInTwoColumns(buttons);
         return await _botClient.SendTextMessageAsync(chatId, messageText, replyMarkup: inlineKeyboardMarkup);
     }
 
     public async Task UpdateBookButtons(Message message, List<BookDataResponse> books)
     {
-        List<InlineKeyboardButton> buttons = CreateBookButtons(books);
+        List<InlineKeyboardButton> buttons = CreateBookButtons(books, false);
         var inlineKeyboardMarkup = SetInlineKeyboardInTwoColumns(buttons);
         await _botClient.EditMessageReplyMarkupAsync(message.Chat.Id, message.MessageId, inlineKeyboardMarkup);
     }
 
     public async Task UpdateBookButtonsAndMessageText(long chatId, int messageId, string messageText, List<BookDataResponse> books)
     {
-        List<InlineKeyboardButton> buttons = CreateBookButtons(books);
+        List<InlineKeyboardButton> buttons = CreateBookButtons(books, true);
         var inlineKeyboardMarkup = SetInlineKeyboardInTwoColumns(buttons);
         await _botClient.EditMessageTextAsync(chatId, messageId, messageText, replyMarkup: inlineKeyboardMarkup);
     }
 
-    public List<InlineKeyboardButton> CreateBookButtons(List<BookDataResponse> books)
+    public List<InlineKeyboardButton> CreateBookButtons(List<BookDataResponse> books, bool firstPage)
     {
         List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
         foreach (BookDataResponse book in books)
@@ -155,12 +155,25 @@ public class MessageService : IMessageService
             buttons.Add(button);
         }
 
-        if (buttons.Count == SharePointService.AmountBooks)
+        if(firstPage && buttons.Count <= SharePointService.AmountBooks)
+        {
+        }
+        else if(firstPage)
+        {
+            buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Next", callbackData: "Next"));
+        }
+        else if (buttons.Count <= SharePointService.AmountBooks)
+        {
+            buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Previous", callbackData: "Previous"));
+        }
+        else
         {
             buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Previous", callbackData: "Previous"));
             buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Next", callbackData: "Next"));
         }
 
+        if(books.Count == SharePointService.AmountBooks + 1)
+            buttons.RemoveAt(SharePointService.AmountBooks);
         return buttons;
     }
 
