@@ -84,21 +84,15 @@ public class MessageService : IMessageService
         return await _botClient.SendTextMessageAsync(message.Chat.Id, "Hey, I'm LibBot. If you are seeing this message, You have completed authentication successfully!", replyMarkup: CreateReplyKeyboardMarkup("Show all books", "My Books", "Search Books"));
     }
     
-    private InlineKeyboardMarkup SetInlineKeyboardInTwoColumns(List<InlineKeyboardButton> inlineButtons)
+    private InlineKeyboardMarkup SetInlineKeyboardInColumn(List<InlineKeyboardButton> inlineButtons)
     {
-        var inlineButtonsTwoColumns = new List<InlineKeyboardButton[]>();
+        var inlineButtonsColumn = new List<InlineKeyboardButton[]>();
         for (var i = 0; i < inlineButtons.Count; i++)
         {
-            if (inlineButtons.Count - 1 == i)
-            {
-                inlineButtonsTwoColumns.Add(new[] { inlineButtons[i] });
-            }
-            else
-                inlineButtonsTwoColumns.Add(new[] { inlineButtons[i], inlineButtons[i + 1] });
-            i++;
+           inlineButtonsColumn.Add(new[] { inlineButtons[i] });
         }
 
-        return new InlineKeyboardMarkup(inlineButtonsTwoColumns.ToArray());
+        return new InlineKeyboardMarkup(inlineButtonsColumn.ToArray());
     }
 
     public async Task CreateYesAndNoButtons(CallbackQuery callbackQuery, string message)
@@ -189,7 +183,7 @@ public class MessageService : IMessageService
         var pathButtons = CreatePathButtons(bookPaths);
         pathButtons.Add(InlineKeyboardButton.WithCallbackData("Clear filters")); 
         pathButtons.Add(InlineKeyboardButton.WithCallbackData("Show all books"));
-        var inlineKeyboardMarkup = SetInlineKeyboardInTwoColumns(pathButtons);
+        var inlineKeyboardMarkup = SetInlineKeyboardInColumn(pathButtons);
         await _botClient.EditMessageTextAsync(chatId, messageId, messageText, replyMarkup: inlineKeyboardMarkup);
     }
 
