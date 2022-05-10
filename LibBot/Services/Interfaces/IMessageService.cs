@@ -1,3 +1,4 @@
+using LibBot.Models;
 using LibBot.Models.SharePointResponses;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -17,9 +18,10 @@ public interface IMessageService
     Task<Message> SayThisBookIsAlreadyBorrowAsync(ITelegramBotClient bot, Message message);
     Task CreateYesAndNoButtons(CallbackQuery callbackQuery, string message);
     List<InlineKeyboardButton> CreateBookButtons(List<BookDataResponse> books, bool firstPage);
-    Task<Message> DisplayBookButtons(long chatId, string messageText, List<BookDataResponse> books);
-    Task UpdateBookButtons(Message message, List<BookDataResponse> books, bool firstPage);
-    Task UpdateBookButtonsAndMessageText(long chatId, int messageId, string messageText, List<BookDataResponse> books, bool firstPage);
+    List<InlineKeyboardButton> CreateUserBookButtons(List<BookDataResponse> books);
+    Task<Message> DisplayBookButtons(long chatId, string messageText, List<BookDataResponse> books, ChatState chatState);
+    Task UpdateBookButtons(Message message, List<BookDataResponse> books, bool firstPage, ChatState chatState);
+    Task UpdateBookButtonsAndMessageText(long chatId, int messageId, string messageText, List<BookDataResponse> books, bool firstPage, ChatState chatState);
     Task EditMessageAfterYesAndNoButtons(ITelegramBotClient bot, CallbackQuery callbackQuery, string messageText);
     Task DisplayInlineButtonsWithMessage(Message message, string messageText, params string[] buttons);
     Task UpdateInlineButtonsWithMessage(long chatId, int messageId, string messageText, string[] bookPaths);
