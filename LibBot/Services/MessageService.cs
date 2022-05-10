@@ -13,8 +13,9 @@ namespace LibBot.Services;
 
 public class MessageService : IMessageService
 {
+    const string EmojiNewInSquare = "\U0001F193";
+    const string EmojiLock = "\U0001F512";
     private readonly ITelegramBotClient _botClient;
-
     public MessageService(ITelegramBotClient botClient)
     {
         _botClient = botClient;
@@ -109,7 +110,7 @@ public class MessageService : IMessageService
             }
             else
             {
-                buttonText = book.BookReaderId is null ? book.Title : "(borrowed)" + book.Title;
+                buttonText = (book.BookReaderId is null ? EmojiNewInSquare : EmojiLock) + $" {book.Title}";
             }
 
             var callbackData = book.BookReaderId is null ? book.Id.ToString() : "Borrowed";

@@ -74,7 +74,7 @@ public class HandleUpdateService : IHandleUpdateService
 
         if (!await _userService.WasAuthenticationCodeSendForUserAsync(chatId))
         {
-           return await GenerateAndSendAuthCodeAsync(message);
+            return await GenerateAndSendAuthCodeAsync(message);
         }
 
         if (await _userService.IsCodeLifetimeExpiredAsync(chatId))
@@ -154,8 +154,8 @@ public class HandleUpdateService : IHandleUpdateService
 
             case "Show all Books":
                 var chatInfoAllBooks = new ChatDbModel(message.Chat.Id, message.MessageId + 1, ChatState.AllBooks);
-                var allBooks = await GetBookDataResponses(chatInfoAllBooks.PageNumber, chatInfoAllBooks.Filters);
-                await _messageService.DisplayBookButtons(chatInfoAllBooks.ChatId, 
+                var allBooks = await GetBookDataResponses(chatInfoAllBooks.PageNumber, chatInfoAllBooks);
+                await _messageService.DisplayBookButtons(chatInfoAllBooks.ChatId,
                     "These books are in our library", allBooks);
                 await _chatService.SaveChatInfoAsync(chatInfoAllBooks);
                 break;
@@ -183,14 +183,14 @@ public class HandleUpdateService : IHandleUpdateService
                 user = await _userService.GetUserByChatIdAsync(message.Chat.Id);
                 await HandleCancelOptionAsync(user);
                 break;
-                    
+
             default:
                 var chatInfo = await _chatService.GetChatInfoAsync(message.Chat.Id, message.MessageId - 2);
                 if (chatInfo is not null && chatInfo.ChatState == ChatState.SearchBooks)
                 {
                     chatInfo.SearchQuery = HttpUtility.UrlEncode(message.Text.Trim());
                     await _chatService.SaveChatInfoAsync(chatInfo);
-                    var searchBooks = await _sharePointService.GetBooksFromSharePointAsync(chatInfo.PageNumber, chatInfo.SearchQuery);
+                    var searchBooks = await GetBookDataResponses(chatInfo.PageNumber, chatInfo);
                     if (searchBooks.Count != 0)
                         await _messageService.DisplayBookButtons(chatInfo.ChatId, "This is the result of your search query.", searchBooks);
                     else
@@ -239,7 +239,7 @@ public class HandleUpdateService : IHandleUpdateService
         switch (callbackQuery.Data)
         {
             case "Show all Books":
-                List<BookDataResponse> allBooks = await GetBookDataResponses(data.PageNumber, data.Filters);
+                List<BookDataResponse> allBooks = await GetBookDataResponses(data.PageNumber, data);
                 await _messageService.UpdateBookButtonsAndMessageText(data.ChatId, data.MessageId,
                     $"These books are in our library.{Environment.NewLine}" + GetFiltersAsAStringMessage(data.Filters), allBooks, firstPage);
                 data.ChatState = ChatState.AllBooks;
@@ -263,7 +263,7 @@ public class HandleUpdateService : IHandleUpdateService
             case "Next":
                 if (data.ChatState == ChatState.AllBooks)
                 {
-                    var books = await GetBookDataResponses(data.PageNumber + 1, data.Filters);
+                    var books = await GetBookDataResponses(data.PageNumber + 1, data);
                     if (books.Count != 0)
                     {
                         data.PageNumber++;
@@ -274,7 +274,7 @@ public class HandleUpdateService : IHandleUpdateService
                 }
                 if (data.ChatState == ChatState.SearchBooks)
                 {
-                    var books = await _sharePointService.GetBooksFromSharePointAsync(data.PageNumber + 1, data.SearchQuery);
+                    var books = await GetBookDataResponses(data.PageNumber + 1, data);
                     if (books.Count != 0)
                     {
                         data.PageNumber++;
@@ -292,7 +292,7 @@ public class HandleUpdateService : IHandleUpdateService
                     {
                         if (data.PageNumber - 1 == 0)
                             firstPage = true;
-                        var previousBooks = await GetBookDataResponses(--data.PageNumber, data.Filters);
+                        var previousBooks = await GetBookDataResponses(--data.PageNumber, data);
                         await _chatService.UpdateChatInfoAsync(data);
                         await UpdateInlineButtonsAsync(callbackQuery, previousBooks, firstPage);
                     }
@@ -301,9 +301,9 @@ public class HandleUpdateService : IHandleUpdateService
                 {
                     if (data.PageNumber - 1 >= 0)
                     {
-                        if(data.PageNumber -1 == 0)
+                        if (data.PageNumber - 1 == 0)
                             firstPage = true;
-                        var previousBooks = await _sharePointService.GetBooksFromSharePointAsync(--data.PageNumber, data.SearchQuery);
+                        var previousBooks = await GetBookDataResponses(--data.PageNumber, data);
                         await _chatService.UpdateChatInfoAsync(data);
                         await UpdateInlineButtonsAsync(callbackQuery, previousBooks, firstPage);
                     }
@@ -313,7 +313,7 @@ public class HandleUpdateService : IHandleUpdateService
             case "No":
                 if (data.ChatState == ChatState.AllBooks)
                 {
-                    var booksAfterNo = await GetBookDataResponses(data.PageNumber, data.Filters);
+                    var booksAfterNo = await GetBookDataResponses(data.PageNumber, data);
                     await _messageService.EditMessageAfterYesAndNoButtons(_botClient, callbackQuery, $"These books are in our library.{Environment.NewLine}" + GetFiltersAsAStringMessage(data.Filters));
                     await UpdateInlineButtonsAsync(callbackQuery, booksAfterNo, firstPage);
                 }
@@ -326,7 +326,7 @@ public class HandleUpdateService : IHandleUpdateService
                 }
                 if (data.ChatState == ChatState.SearchBooks)
                 {
-                    var booksAfterNo = await _sharePointService.GetBooksFromSharePointAsync(data.PageNumber, data.SearchQuery);
+                    var booksAfterNo = await GetBookDataResponses(data.PageNumber, data);
                     await _messageService.EditMessageAfterYesAndNoButtons(_botClient, callbackQuery, "This is the result of your search query.");
                     await UpdateInlineButtonsAsync(callbackQuery, booksAfterNo, firstPage);
                 }
@@ -362,7 +362,7 @@ public class HandleUpdateService : IHandleUpdateService
                 {
                     ChangeBookStatusRequest borrowBook = new ChangeBookStatusRequest(user.SharePointId, user.SharePointId, DateTime.UtcNow, DateTime.UtcNow);
                     await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, borrowBook);
-                    var booksAfterYes = await _sharePointService.GetBooksFromSharePointAsync(data.PageNumber, data.Filters);
+                    var booksAfterYes = await GetBookDataResponses(data.PageNumber, data);
                     await _messageService.EditMessageAfterYesAndNoButtons(_botClient, callbackQuery, "This is the result of your search query.");
                     await UpdateInlineButtonsAsync(callbackQuery, booksAfterYes, firstPage);
                 }
@@ -421,14 +421,19 @@ public class HandleUpdateService : IHandleUpdateService
 
     private string GetFiltersAsAStringMessage(IEnumerable<string> filters) => filters is null ? string.Empty : $"Your filters: {string.Join(", ", filters)}";
 
-    private async Task<List<BookDataResponse>> GetBookDataResponses(int pageNumber, List<string> filters)
+    private async Task<List<BookDataResponse>> GetBookDataResponses(int pageNumber, ChatDbModel data)
     {
-        if (filters is null || filters.Count == 0)
+        if (data.Filters is not null && data.Filters.Count > 0)
         {
-            return await _sharePointService.GetBooksFromSharePointAsync(pageNumber);
+            return await _sharePointService.GetBooksFromSharePointAsync(pageNumber, data.Filters);
         }
 
-        return await _sharePointService.GetBooksFromSharePointAsync(pageNumber, filters);
+        if (!string.IsNullOrWhiteSpace(data.SearchQuery))
+        {
+            return await _sharePointService.GetBooksFromSharePointAsync(pageNumber, data.SearchQuery);
+        }
+
+        return await _sharePointService.GetBooksFromSharePointAsync(pageNumber);
     }
     private async Task UpdateInlineButtonsAsync(CallbackQuery callbackQuery, List<BookDataResponse> books, bool firstPage)
     {
@@ -439,7 +444,7 @@ public class HandleUpdateService : IHandleUpdateService
     {
         if (data.ChatState == ChatState.AllBooks)
         {
-            return await GetBookDataResponses(data.PageNumber, data.Filters);
+            return await GetBookDataResponses(data.PageNumber, data);
         }
         else
         {
