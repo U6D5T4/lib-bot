@@ -114,16 +114,16 @@ public class MessageService : IMessageService
         return await _botClient.SendTextMessageAsync(chatId, messageText, replyMarkup: inlineKeyboardMarkup);
     }
 
-    public async Task UpdateBookButtons(Message message, List<BookDataResponse> books)
+    public async Task UpdateBookButtons(Message message, List<BookDataResponse> books, bool firstPage)
     {
-        List<InlineKeyboardButton> buttons = CreateBookButtons(books, false);
+        List<InlineKeyboardButton> buttons = CreateBookButtons(books, firstPage);
         var inlineKeyboardMarkup = SetInlineKeyboardInColumn(buttons);
         await _botClient.EditMessageReplyMarkupAsync(message.Chat.Id, message.MessageId, inlineKeyboardMarkup);
     }
 
-    public async Task UpdateBookButtonsAndMessageText(long chatId, int messageId, string messageText, List<BookDataResponse> books)
+    public async Task UpdateBookButtonsAndMessageText(long chatId, int messageId, string messageText, List<BookDataResponse> books, bool firstPage)
     {
-        List<InlineKeyboardButton> buttons = CreateBookButtons(books, true);
+        List<InlineKeyboardButton> buttons = CreateBookButtons(books, firstPage);
         var inlineKeyboardMarkup = SetInlineKeyboardInColumn(buttons);
         await _botClient.EditMessageTextAsync(chatId, messageId, messageText, replyMarkup: inlineKeyboardMarkup);
     }
@@ -147,8 +147,7 @@ public class MessageService : IMessageService
             var callbackData = book.BookReaderId is null ? book.Id.ToString() : "Borrowed";
             var button = InlineKeyboardButton.WithCallbackData(text: buttonText, callbackData: callbackData);
             buttons.Add(button);
-        }
-
+        }          
         if(firstPage && buttons.Count <= SharePointService.AmountBooks)
         {
         }

@@ -18,8 +18,8 @@ public interface IMessageService
     Task CreateYesAndNoButtons(CallbackQuery callbackQuery, string message);
     List<InlineKeyboardButton> CreateBookButtons(List<BookDataResponse> books, bool firstPage);
     Task<Message> DisplayBookButtons(long chatId, string messageText, List<BookDataResponse> books);
-    Task UpdateBookButtons(Message message, List<BookDataResponse> books);
-    Task UpdateBookButtonsAndMessageText(long chatId, int messageId, string messageText, List<BookDataResponse> books);
+    Task UpdateBookButtons(Message message, List<BookDataResponse> books, bool firstPage);
+    Task UpdateBookButtonsAndMessageText(long chatId, int messageId, string messageText, List<BookDataResponse> books, bool firstPage);
     Task EditMessageAfterYesAndNoButtons(ITelegramBotClient bot, CallbackQuery callbackQuery, string messageText);
     Task DisplayInlineButtonsWithMessage(Message message, string messageText, params string[] buttons);
     Task UpdateInlineButtonsWithMessage(long chatId, int messageId, string messageText, string[] bookPaths);
