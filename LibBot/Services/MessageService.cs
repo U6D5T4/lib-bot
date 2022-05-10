@@ -109,26 +109,26 @@ public class MessageService : IMessageService
 
     public async Task<Message> DisplayBookButtons(long chatId, string messageText, List<BookDataResponse> books)
     {
-        List<InlineKeyboardButton> buttons = CreateBookButtons(books);
+        List<InlineKeyboardButton> buttons = CreateBookButtons(books, true);
         var inlineKeyboardMarkup = SetInlineKeyboardInColumn(buttons);
         return await _botClient.SendTextMessageAsync(chatId, messageText, replyMarkup: inlineKeyboardMarkup);
     }
 
-    public async Task UpdateBookButtons(Message message, List<BookDataResponse> books)
+    public async Task UpdateBookButtons(Message message, List<BookDataResponse> books, bool firstPage)
     {
-        List<InlineKeyboardButton> buttons = CreateBookButtons(books);
+        List<InlineKeyboardButton> buttons = CreateBookButtons(books, firstPage);
         var inlineKeyboardMarkup = SetInlineKeyboardInColumn(buttons);
         await _botClient.EditMessageReplyMarkupAsync(message.Chat.Id, message.MessageId, inlineKeyboardMarkup);
     }
 
-    public async Task UpdateBookButtonsAndMessageText(long chatId, int messageId, string messageText, List<BookDataResponse> books)
+    public async Task UpdateBookButtonsAndMessageText(long chatId, int messageId, string messageText, List<BookDataResponse> books, bool firstPage)
     {
-        List<InlineKeyboardButton> buttons = CreateBookButtons(books);
+        List<InlineKeyboardButton> buttons = CreateBookButtons(books, firstPage);
         var inlineKeyboardMarkup = SetInlineKeyboardInColumn(buttons);
         await _botClient.EditMessageTextAsync(chatId, messageId, messageText, replyMarkup: inlineKeyboardMarkup);
     }
 
-    public List<InlineKeyboardButton> CreateBookButtons(List<BookDataResponse> books)
+    public List<InlineKeyboardButton> CreateBookButtons(List<BookDataResponse> books, bool firstPage)
     {
         List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
         foreach (BookDataResponse book in books)
@@ -147,14 +147,26 @@ public class MessageService : IMessageService
             var callbackData = book.BookReaderId is null ? book.Id.ToString() : "Borrowed";
             var button = InlineKeyboardButton.WithCallbackData(text: buttonText, callbackData: callbackData);
             buttons.Add(button);
+        }          
+        if(firstPage && buttons.Count <= SharePointService.AmountBooks)
+        {
         }
-
-        if (buttons.Count == SharePointService.AmountBooks)
+        else if(firstPage)
+        {
+            buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Next", callbackData: "Next"));
+        }
+        else if (buttons.Count <= SharePointService.AmountBooks)
+        {
+            buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Previous", callbackData: "Previous"));
+        }
+        else
         {
             buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Previous", callbackData: "Previous"));
             buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Next", callbackData: "Next"));
         }
 
+        if(books.Count == SharePointService.AmountBooks + 1)
+            buttons.RemoveAt(SharePointService.AmountBooks);
         return buttons;
     }
 
