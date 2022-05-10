@@ -140,9 +140,14 @@ public class UserService : IUserService
     {
         return await _userDbService.ReadItemAsync(chatId);
     }
+    public async Task UpdateUserAsync(UserDbModel user)
+    {
+        await _userDbService.UpdateItemAsync(user);
+    }
 
     private async Task<CodeDbModel> GetCodeByChatIdAsync(long chatId)
     {
         return await _codeDbService.ReadItemAsync(chatId);
     }
+
 }
