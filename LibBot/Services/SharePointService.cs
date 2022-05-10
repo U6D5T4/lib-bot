@@ -16,7 +16,6 @@ public class SharePointService : ISharePointService
     private readonly IFileService _fileService;
     
     public static int AmountBooks { get; } = 8;
-    private string[] _bookPaths;
 
     public SharePointService(IHttpClientFactory clientFactory, IFileService fileService)
     {
@@ -120,15 +119,7 @@ public class SharePointService : ISharePointService
         return filteredBooks.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
     }
 
-    public async Task<string[]> GetBookPathsAsync()
-    {
-        if (_bookPaths is null)
-        {
-            _bookPaths = await _fileService.GetBookPathsFromFileAsync("bookPaths.txt");
-        }
-
-        return _bookPaths;
-    }
+    public async Task<string[]> GetBookPathsAsync() => await _fileService.GetBookPathsFromFileAsync("bookPaths.txt");
 
     public async Task<bool> ChangeBookStatus(long chatId, int bookId, ChangeBookStatusRequest bookBorrowRequest)
     {
