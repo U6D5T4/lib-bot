@@ -84,7 +84,7 @@ public class MessageService : IMessageService
         return await _botClient.SendTextMessageAsync(message.Chat.Id, "Hey, I'm LibBot. If you are seeing this message, You have completed authentication successfully!", replyMarkup: CreateReplyKeyboardMarkup("Show all books", "My Books", "Search Books"));
     }
     
-    private InlineKeyboardMarkup SetInlineKeyboardInTwoColumns(List<InlineKeyboardButton> inlineButtons)
+    private InlineKeyboardMarkup SetInlineKeyboardInColumn(List<InlineKeyboardButton> inlineButtons)
     {
         var inlineButtonsTwoColumns = new List<InlineKeyboardButton[]>();
         for (var i = 0; i < inlineButtons.Count; i++)
@@ -116,21 +116,21 @@ public class MessageService : IMessageService
     public async Task<Message> DisplayBookButtons(long chatId, string messageText, List<BookDataResponse> books)
     {
         List<InlineKeyboardButton> buttons = CreateBookButtons(books, true);
-        var inlineKeyboardMarkup = SetInlineKeyboardInTwoColumns(buttons);
+        var inlineKeyboardMarkup = SetInlineKeyboardInColumn(buttons);
         return await _botClient.SendTextMessageAsync(chatId, messageText, replyMarkup: inlineKeyboardMarkup);
     }
 
     public async Task UpdateBookButtons(Message message, List<BookDataResponse> books)
     {
         List<InlineKeyboardButton> buttons = CreateBookButtons(books, false);
-        var inlineKeyboardMarkup = SetInlineKeyboardInTwoColumns(buttons);
+        var inlineKeyboardMarkup = SetInlineKeyboardInColumn(buttons);
         await _botClient.EditMessageReplyMarkupAsync(message.Chat.Id, message.MessageId, inlineKeyboardMarkup);
     }
 
     public async Task UpdateBookButtonsAndMessageText(long chatId, int messageId, string messageText, List<BookDataResponse> books)
     {
         List<InlineKeyboardButton> buttons = CreateBookButtons(books, true);
-        var inlineKeyboardMarkup = SetInlineKeyboardInTwoColumns(buttons);
+        var inlineKeyboardMarkup = SetInlineKeyboardInColumn(buttons);
         await _botClient.EditMessageTextAsync(chatId, messageId, messageText, replyMarkup: inlineKeyboardMarkup);
     }
 
@@ -189,7 +189,7 @@ public class MessageService : IMessageService
         var pathButtons = CreatePathButtons(bookPaths);
         pathButtons.Add(InlineKeyboardButton.WithCallbackData("Clear filters")); 
         pathButtons.Add(InlineKeyboardButton.WithCallbackData("Show all books"));
-        var inlineKeyboardMarkup = SetInlineKeyboardInTwoColumns(pathButtons);
+        var inlineKeyboardMarkup = SetInlineKeyboardInColumn(pathButtons);
         await _botClient.EditMessageTextAsync(chatId, messageId, messageText, replyMarkup: inlineKeyboardMarkup);
     }
 
