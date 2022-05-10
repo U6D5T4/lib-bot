@@ -14,8 +14,9 @@ namespace LibBot.Services;
 
 public class MessageService : IMessageService
 {
+    const string EmojiNewInSquare = "\U0001F193";
+    const string EmojiLock = "\U0001F512";
     private readonly ITelegramBotClient _botClient;
-
     public MessageService(ITelegramBotClient botClient)
     {
         _botClient = botClient;
@@ -102,7 +103,7 @@ public class MessageService : IMessageService
         List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
         foreach (BookDataResponse book in books)
         {
-            var buttonText = book.BookReaderId is null ? book.Title : "(borrowed)" + book.Title;
+            var buttonText = (book.BookReaderId is null ? EmojiNewInSquare : EmojiLock) + $" {book.Title}";
             var callbackData = book.BookReaderId is null ? book.Id.ToString() : "Borrowed";
             var button = InlineKeyboardButton.WithCallbackData(text: buttonText, callbackData: callbackData);
             buttons.Add(button);
