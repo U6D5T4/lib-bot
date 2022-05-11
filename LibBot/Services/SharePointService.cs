@@ -90,7 +90,7 @@ public class SharePointService : ISharePointService
     {
         var client = _clientFactory.CreateClient("SharePoint");
 
-        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id,BookReaderId&$skiptoken=Paged=TRUE%26p_ID={pageNumber * AmountBooks}&$top={AmountBooks + 1}&$filter=substringof('{searchQuery}', Title)");
+        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id,BookReaderId&$filter=substringof('{searchQuery}', Title)");
         var contentsString = await httpResponse.Content.ReadAsStringAsync();
         var dataBooks = Book.FromJson(contentsString);
 
@@ -99,7 +99,7 @@ public class SharePointService : ISharePointService
         if (result.Count == 0)
             result = new List<BookDataResponse>();
 
-        return result;
+        return result.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
     }
 
     public async Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, List<string> filters)
