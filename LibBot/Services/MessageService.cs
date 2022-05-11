@@ -1,3 +1,4 @@
+using LibBot.Models;
 using LibBot.Models.SharePointResponses;
 using LibBot.Services.Interfaces;
 using System;
@@ -76,23 +77,23 @@ public class MessageService : IMessageService
         await _botClient.EditMessageTextAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId, message, replyMarkup: inlineKeyboard);
     }
 
-    public async Task<Message> DisplayBookButtons(long chatId, string messageText, List<BookDataResponse> books)
+    public async Task<Message> DisplayBookButtons(long chatId, string messageText, List<BookDataResponse> books, ChatState chatState)
     {
-        List<InlineKeyboardButton> buttons = CreateBookButtons(books, true);
+         List<InlineKeyboardButton> buttons = ChatState.UserBooks == chatState ? CreateUserBookButtons(books) : CreateBookButtons(books, true);
         var inlineKeyboardMarkup = SetInlineKeyboardInColumn(buttons);
         return await _botClient.SendTextMessageAsync(chatId, messageText, replyMarkup: inlineKeyboardMarkup);
     }
 
-    public async Task UpdateBookButtons(Message message, List<BookDataResponse> books, bool firstPage)
+    public async Task UpdateBookButtons(Message message, List<BookDataResponse> books, bool firstPage, ChatState chatState)
     {
-        List<InlineKeyboardButton> buttons = CreateBookButtons(books, firstPage);
+        List<InlineKeyboardButton> buttons = ChatState.UserBooks == chatState ? CreateUserBookButtons(books) : CreateBookButtons(books, firstPage);
         var inlineKeyboardMarkup = SetInlineKeyboardInColumn(buttons);
         await _botClient.EditMessageReplyMarkupAsync(message.Chat.Id, message.MessageId, inlineKeyboardMarkup);
     }
 
-    public async Task UpdateBookButtonsAndMessageText(long chatId, int messageId, string messageText, List<BookDataResponse> books, bool firstPage)
+    public async Task UpdateBookButtonsAndMessageText(long chatId, int messageId, string messageText, List<BookDataResponse> books, bool firstPage, ChatState chatState)
     {
-        List<InlineKeyboardButton> buttons = CreateBookButtons(books, firstPage);
+        List<InlineKeyboardButton> buttons = ChatState.UserBooks == chatState ? CreateUserBookButtons(books) : CreateBookButtons(books, firstPage);
         var inlineKeyboardMarkup = SetInlineKeyboardInColumn(buttons);
         await _botClient.EditMessageTextAsync(chatId, messageId, messageText, replyMarkup: inlineKeyboardMarkup);
     }
@@ -102,17 +103,7 @@ public class MessageService : IMessageService
         List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
         foreach (BookDataResponse book in books)
         {
-            var buttonText = string.Empty;
-            if (book.TakenToRead.ToShortDateString() != new DateTime(01, 01, 0001).ToShortDateString())
-            {
-                var borrowedDate = book.TakenToRead.AddMonths(2).ToLocalTime().ToShortDateString();
-                buttonText = book.Title + " Due Date:" + borrowedDate;
-            }
-            else
-            {
-                buttonText = (book.BookReaderId is null ? EmojiNewInSquare : EmojiLock) + $" {book.Title}";
-            }
-
+            var buttonText = (book.BookReaderId is null ? EmojiNewInSquare : EmojiLock) + $" {book.Title}";
             var callbackData = book.BookReaderId is null ? book.Id.ToString() : "Borrowed";
             var button = InlineKeyboardButton.WithCallbackData(text: buttonText, callbackData: callbackData);
             buttons.Add(button);
@@ -139,6 +130,30 @@ public class MessageService : IMessageService
         return buttons;
     }
 
+    public List<InlineKeyboardButton> CreateUserBookButtons(List<BookDataResponse> books)
+    {
+        var sortedBooks = books.OrderBy(x => x.TakenToRead).ToList();
+        var buttons = new List<InlineKeyboardButton>();
+        var borrowedDateList = new List<string>();
+        foreach (BookDataResponse book in sortedBooks)
+        {
+            var borrowedDate = book.TakenToRead.AddMonths(2).ToLocalTime().ToShortDateString();
+            if (!borrowedDateList.Contains(borrowedDate))
+            {
+                borrowedDateList.Add(borrowedDate);
+                var buttonReturn = InlineKeyboardButton.WithCallbackData(text: "Return till " + borrowedDate, callbackData: "TillData");
+                buttons.Add(buttonReturn);
+            }
+
+            var buttonText = book.Title;
+            var callbackData = book.Id.ToString();
+            var button = InlineKeyboardButton.WithCallbackData(text: buttonText, callbackData: callbackData);
+
+            buttons.Add(button);
+        }
+
+        return buttons;
+    }
     public async Task DisplayInlineButtonsWithMessage(Message message, string messageText, params string[] buttons)
     {
         var buttonsDict = buttons.ToDictionary(key => key, val => val);
