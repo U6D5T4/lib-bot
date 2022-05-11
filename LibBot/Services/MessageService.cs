@@ -59,7 +59,7 @@ public class MessageService : IMessageService
     public async Task<Message> SendWelcomeMessageAsync(long chatId)
     {
         var message = "Hey, I'm LibBot. Choose the option";
-        var replyMarkup = CreateReplyKeyboardMarkup("Library", "My Books");
+        var replyMarkup = CreateReplyKeyboardMarkup("Library", "My books");
         return await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: replyMarkup);
     }
 
@@ -184,10 +184,10 @@ public class MessageService : IMessageService
     {
         var replyMarkup = GetLibraryMenuMarkup();
         var message = $"Welcome to `Library` menu{Environment.NewLine}" +
-                      $"`Search Books` - search all books in library by name{Environment.NewLine}" +
-                      $"`Filter by path` - show possible paths for filtering books{Environment.NewLine}" +
-                      $"`Show all Books` - show all books in library";
-
+                      $"`Search books` - search all books in library by name{Environment.NewLine}" +
+                      $"`Filter by path` - show books filtered by chosen paths{Environment.NewLine}" +
+                      $"`Show all books` - show all books in library";
+                      
         await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: replyMarkup, parseMode: ParseMode.Markdown);
     }
 
@@ -228,8 +228,8 @@ public class MessageService : IMessageService
     {
         return new ReplyKeyboardMarkup(new[]
         {
-            new KeyboardButton[] { "Search Books", "Filter by path" },
-            new KeyboardButton[] { "Show all Books" },
+            new KeyboardButton[] { "Search books", "Filter by path" },
+            new KeyboardButton[] { "Show all books" },
             new KeyboardButton[] { "Cancel"}
         })
         {
