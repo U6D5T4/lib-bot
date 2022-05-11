@@ -14,7 +14,20 @@ public class SharePointService : ISharePointService
 {
     private readonly IHttpClientFactory _clientFactory;
     private readonly IFileService _fileService;
-    
+
+    private static List<BookDataResponse> books;
+
+    public async Task<List<BookDataResponse>> GetBookData()
+    {
+        return books is null ? await GetAllBooksFromSharePointAsync() : books; 
+    }
+
+    public async Task<List<BookDataResponse>> UpdateBookData()
+    {
+        books = await GetAllBooksFromSharePointAsync();
+        return books;
+    }
+
     public static int AmountBooks { get; } = 8;
 
     public SharePointService(IHttpClientFactory clientFactory, IFileService fileService)
@@ -50,11 +63,12 @@ public class SharePointService : ISharePointService
         return userData;
     }
 
-    public async Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber)
+
+    private async Task<List<BookDataResponse>> GetAllBooksFromSharePointAsync()
     {
         var client = _clientFactory.CreateClient("SharePoint");
 
-        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id,BookReaderId&$skiptoken=Paged=TRUE%26p_ID={pageNumber * AmountBooks}&$top={AmountBooks + 1}");
+        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id,BookReaderId,TakenToRead,Technology&$top=300&$orderby=Title");
 
         var contentsString = await httpResponse.Content.ReadAsStringAsync();
         var dataBooks = Book.FromJson(contentsString);
@@ -68,54 +82,45 @@ public class SharePointService : ISharePointService
     }
 
 
-
-    public async Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, int userId)
+    public async Task<bool> IsBorrowedBookAsync(int bookId)
     {
         var client = _clientFactory.CreateClient("SharePoint");
-        
-        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id,TakenToRead&$skiptoken=Paged=TRUE%26p_ID={pageNumber * AmountBooks}&$top={AmountBooks + 1}&$filter=BookReaderId eq {userId}");
+
+        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Id,BookReaderId&$filter=Id eq {bookId}");
 
         var contentsString = await httpResponse.Content.ReadAsStringAsync();
         var dataBooks = Book.FromJson(contentsString);
 
         var result = Book.GetBookDataResponse(dataBooks);
 
-        if (result.Count == 0)
-            result = new List<BookDataResponse>();
-
-        return result;
+        return result[0].BookReaderId is not null ? true : false ;
+    }
+    public async Task<List<BookDataResponse>> GetBooksAsync(int pageNumber)
+    {
+        var books = await GetBookData();
+        return books.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
     }
 
-    public async Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, string searchQuery)
+
+    public async Task<List<BookDataResponse>> GetBooksAsync(int pageNumber, List<string> filters)
     {
-        var client = _clientFactory.CreateClient("SharePoint");
-
-        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id,BookReaderId&$filter=substringof('{searchQuery}', Title)");
-        var contentsString = await httpResponse.Content.ReadAsStringAsync();
-        var dataBooks = Book.FromJson(contentsString);
-
-        var result = Book.GetBookDataResponse(dataBooks);
-
-        if (result.Count == 0)
-            result = new List<BookDataResponse>();
-
-        return result.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
+        var books = await GetBookData();
+        var filteredBooks = filters is null ? books : books.Where(book => filters.Any(filter => book.Technology.Results.Any(tech => tech.Label == filter)));
+        return filteredBooks.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
     }
 
-    public async Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, List<string> filters)
+    public async Task<List<BookDataResponse>> GetBooksAsync(int pageNumber, string searchQuery)
     {
-        var client = _clientFactory.CreateClient("SharePoint");
+        var books = await GetBookData();
+        var filteredBooks = searchQuery is null ? books : books
+            .Where(book => book.Title.ToLower().Contains(searchQuery.ToLower()));
+        return filteredBooks.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
+    }
 
-        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id,BookReaderId,Technology&$top=300");
-        var contentsString = await httpResponse.Content.ReadAsStringAsync();
-        var dataBooks = Book.FromJson(contentsString);
-
-        var result = Book.GetBookDataResponse(dataBooks);
-
-        if (result.Count == 0)
-            result = new List<BookDataResponse>();
-
-        var filteredBooks = filters is null ? result : result.Where(book => filters.Any(filter => book.Technology.Results.Any(tech => tech.Label == filter)));
+    public async Task<List<BookDataResponse>> GetBooksAsync(int pageNumber, int? userId)
+    {
+        var books = await GetBookData();
+        var filteredBooks = userId is null ? books : books.Where(book => book.BookReaderId.Equals(userId));
         return filteredBooks.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
     }
 
