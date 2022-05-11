@@ -11,8 +11,12 @@ public interface ISharePointService
     Task<bool> IsUserExistInSharePointAsync(string login);
     Task<UserDataResponse> GetUserDataFromSharePointAsync(string login);
     Task<bool> ChangeBookStatus(long chatId, int bookId, ChangeBookStatusRequest changeBookStatusRequest);
-    Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber);
-    Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, int userId);
-    Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, string searchQuery);
-    Task<List<BookDataResponse>> GetBooksFromSharePointAsync(int pageNumber, List<string> filters);
+    Task<List<BookDataResponse>> GetBooksAsync(int pageNumber);
+    Task<List<BookDataResponse>> GetBooksAsync(int pageNumber, List<string> filters);
+    Task<List<BookDataResponse>> GetBooksAsync(int pageNumber, string searchQuery);
+    Task<List<BookDataResponse>> GetBooksAsync(int pageNumber, int? userId);
+    Task<List<BookDataResponse>> UpdateBookData();
+    Task<List<BookDataResponse>> GetBookData();
+    Task<bool> IsBorrowedBookAsync(int bookId);
+
 }
