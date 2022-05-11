@@ -31,7 +31,7 @@ namespace LibBot.Services
         }
         public async Task<Message> SayHelloFromArtyom(ITelegramBotClient bot, Message message)
         {
-            return await _botClient.SendTextMessageAsync(message.Chat.Id, "New message", replyMarkup: replyKeyboardMarkup);
+            return await _botClient.SendTextMessageAsync(message.Chat.Id, "New message a ", replyMarkup: replyKeyboardMarkup);
         }
         public async Task<Message> SayDefaultMessage(ITelegramBotClient bot, Message message)
         {
