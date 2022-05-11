@@ -12,10 +12,4 @@
     </PackageReference>
     <PackageReference Include="Telegram.Bot" Version="17.0.0" />
   </ItemGroup>
-
-	<Target Name="MyTarget" AfterTargets="MinVer">
-		<PropertyGroup>
-			<AssemblyVersion>$(MinVerMajor).$(MinVerMinor).$(MinVerPatch)</AssemblyVersion>
-		</PropertyGroup>
-	</Target>
 </Project>
