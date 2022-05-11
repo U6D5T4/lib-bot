@@ -1,4 +1,5 @@
 ﻿using LibBot.Services.Interfaces;
+using System.Reflection;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -26,7 +27,7 @@ namespace LibBot.Services
 
         public async Task<Message> SayHelloFromAnton(ITelegramBotClient bot, Message message)
         {
-            return await _botClient.SendTextMessageAsync(message.Chat.Id, "Hello, this is Anton's function!", replyMarkup: replyKeyboardMarkup);
+            return await _botClient.SendTextMessageAsync(message.Chat.Id, $"v{Assembly.GetExecutingAssembly().GetName().Version}", replyMarkup: replyKeyboardMarkup);
         }
         public async Task<Message> SayHelloFromArtyom(ITelegramBotClient bot, Message message)
         {
