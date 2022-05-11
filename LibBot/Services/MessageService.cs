@@ -22,36 +22,36 @@ public class MessageService : IMessageService
         _botClient = botClient;
     }
 
-    public async Task<Message> SendTextMessageAndClearKeyboardAsync(ITelegramBotClient bot, long chatId, string message)
+    public async Task<Message> SendTextMessageAndClearKeyboardAsync(long chatId, string message)
     {
         return await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: new ReplyKeyboardRemove());
     }
 
-    public async Task<Message> AskToEnterOutlookLoginAsync(ITelegramBotClient bot, Message message)
+    public async Task<Message> AskToEnterOutlookLoginAsync(Message message)
     {
-        return await SendTextMessageAndClearKeyboardAsync(bot, message.Chat.Id,
+        return await SendTextMessageAndClearKeyboardAsync(message.Chat.Id,
             "Please, enter your outlook email or outlook login.");
     }
 
-    public async Task<Message> AskToEnterAuthCodeAsync(ITelegramBotClient bot, Message message)
+    public async Task<Message> AskToEnterAuthCodeAsync(Message message)
     {
-        return await SendTextMessageAndClearKeyboardAsync(bot, message.Chat.Id,
+        return await SendTextMessageAndClearKeyboardAsync(message.Chat.Id,
             "Please, check your email and enter your auth code here.");
     }
 
-    public async Task<Message> AksToEnterSearchQueryAsync(ITelegramBotClient bot, Message message)
+    public async Task<Message> AksToEnterSearchQueryAsync(Message message)
     {
         return await _botClient.SendTextMessageAsync(message.Chat.Id,
             "Please, enter book's name or author's name.");
     }
 
-    public async Task<Message> SayThisBookIsAlreadyBorrowAsync(ITelegramBotClient bot, Message message)
+    public async Task<Message> SayThisBookIsAlreadyBorrowAsync(Message message)
     {
         return await _botClient.SendTextMessageAsync(message.Chat.Id,
             "Sorry, this book is already borrowed.");
     }
 
-    public async Task EditMessageAfterYesAndNoButtons(ITelegramBotClient bot, CallbackQuery callbackQuery, string message)
+    public async Task EditMessageAfterYesAndNoButtonsAsync(CallbackQuery callbackQuery, string message)
     {
         await _botClient.EditMessageTextAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId, message);
     }
@@ -63,9 +63,9 @@ public class MessageService : IMessageService
         return await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: replyMarkup);
     }
 
-   
 
-    public async Task CreateYesAndNoButtons(CallbackQuery callbackQuery, string message)
+
+    public async Task CreateYesAndNoButtonsAsync(CallbackQuery callbackQuery, string message)
     {
         var yesNoDict = new Dictionary<string, string>
         {
@@ -79,26 +79,26 @@ public class MessageService : IMessageService
 
     public async Task<Message> DisplayBookButtons(long chatId, string messageText, List<BookDataResponse> books, ChatState chatState)
     {
-         List<InlineKeyboardButton> buttons = ChatState.UserBooks == chatState ? CreateUserBookButtons(books) : CreateBookButtons(books, true);
+        List<InlineKeyboardButton> buttons = ChatState.UserBooks == chatState ? CreateUserBookButtonsAsync(books) : CreateBookButtonsAsync(books, true);
         var inlineKeyboardMarkup = SetInlineKeyboardInColumn(buttons);
         return await _botClient.SendTextMessageAsync(chatId, messageText, replyMarkup: inlineKeyboardMarkup);
     }
 
     public async Task UpdateBookButtons(Message message, List<BookDataResponse> books, bool firstPage, ChatState chatState)
     {
-        List<InlineKeyboardButton> buttons = ChatState.UserBooks == chatState ? CreateUserBookButtons(books) : CreateBookButtons(books, firstPage);
+        List<InlineKeyboardButton> buttons = ChatState.UserBooks == chatState ? CreateUserBookButtonsAsync(books) : CreateBookButtonsAsync(books, firstPage);
         var inlineKeyboardMarkup = SetInlineKeyboardInColumn(buttons);
         await _botClient.EditMessageReplyMarkupAsync(message.Chat.Id, message.MessageId, inlineKeyboardMarkup);
     }
 
-    public async Task UpdateBookButtonsAndMessageText(long chatId, int messageId, string messageText, List<BookDataResponse> books, bool firstPage, ChatState chatState)
+    public async Task UpdateBookButtonsAndMessageTextAsync(long chatId, int messageId, string messageText, List<BookDataResponse> books, bool firstPage, ChatState chatState)
     {
-        List<InlineKeyboardButton> buttons = ChatState.UserBooks == chatState ? CreateUserBookButtons(books) : CreateBookButtons(books, firstPage);
+        List<InlineKeyboardButton> buttons = ChatState.UserBooks == chatState ? CreateUserBookButtonsAsync(books) : CreateBookButtonsAsync(books, firstPage);
         var inlineKeyboardMarkup = SetInlineKeyboardInColumn(buttons);
         await _botClient.EditMessageTextAsync(chatId, messageId, messageText, replyMarkup: inlineKeyboardMarkup);
     }
 
-    public List<InlineKeyboardButton> CreateBookButtons(List<BookDataResponse> books, bool firstPage)
+    public List<InlineKeyboardButton> CreateBookButtonsAsync(List<BookDataResponse> books, bool firstPage)
     {
         List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
         foreach (BookDataResponse book in books)
@@ -107,11 +107,11 @@ public class MessageService : IMessageService
             var callbackData = book.BookReaderId is null ? book.Id.ToString() : "Borrowed";
             var button = InlineKeyboardButton.WithCallbackData(text: buttonText, callbackData: callbackData);
             buttons.Add(button);
-        }          
-        if(firstPage && buttons.Count <= SharePointService.AmountBooks)
+        }
+        if (firstPage && buttons.Count <= SharePointService.AmountBooks)
         {
         }
-        else if(firstPage)
+        else if (firstPage)
         {
             buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Next", callbackData: "Next"));
         }
@@ -125,12 +125,12 @@ public class MessageService : IMessageService
             buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Next", callbackData: "Next"));
         }
 
-        if(books.Count == SharePointService.AmountBooks + 1)
+        if (books.Count == SharePointService.AmountBooks + 1)
             buttons.RemoveAt(SharePointService.AmountBooks);
         return buttons;
     }
 
-    public List<InlineKeyboardButton> CreateUserBookButtons(List<BookDataResponse> books)
+    public List<InlineKeyboardButton> CreateUserBookButtonsAsync(List<BookDataResponse> books)
     {
         var sortedBooks = books.OrderBy(x => x.TakenToRead).ToList();
         var buttons = new List<InlineKeyboardButton>();
@@ -154,17 +154,30 @@ public class MessageService : IMessageService
 
         return buttons;
     }
-    public async Task DisplayInlineButtonsWithMessage(Message message, string messageText, params string[] buttons)
+    public async Task DisplayInlineButtonsWithMessageAsync(Message message, string messageText, params string[] buttons)
     {
         var buttonsDict = buttons.ToDictionary(key => key, val => val);
         var inlineButtons = CreateInlineKeyboardMarkup(buttonsDict);
         await _botClient.SendTextMessageAsync(message.Chat.Id, messageText, replyMarkup: inlineButtons);
     }
 
-    public async Task UpdateInlineButtonsWithMessage(long chatId, int messageId, string messageText, string[] bookPaths)
+    public async Task UpdateFilterBooksMessageWithInlineKeyboardAsync(long chatId, int messageId, string[] bookPaths, string message = null)
     {
-        var inlineKeyboardMarkup = GetInlineKeybordInTwoColumns(bookPaths.Select(key => key).Append("Clear filters").Append("Show all books"));
-        await _botClient.EditMessageTextAsync(chatId, messageId, messageText, replyMarkup: inlineKeyboardMarkup);
+        var inlineKeyboardMarkup = GetInlineKeybordInTwoColumns(bookPaths);
+        if (message is null)
+        {
+            await _botClient.EditMessageReplyMarkupAsync(chatId, messageId, replyMarkup: inlineKeyboardMarkup);
+        }
+        else
+        {
+            await _botClient.EditMessageTextAsync(chatId, messageId, message, replyMarkup: inlineKeyboardMarkup);
+        }
+    }
+
+    public async Task SendFilterBooksMessageWithInlineKeyboardAsync(long chatId, string message, string[] bookPaths)
+    {
+        var inlineKeyboardMarkup = GetInlineKeybordInTwoColumns(bookPaths);
+        await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: inlineKeyboardMarkup);
     }
 
     public async Task SendLibraryMenuMessageAsync(long chatId)
@@ -174,14 +187,23 @@ public class MessageService : IMessageService
                       $"`Search books` - search all books in library by name{Environment.NewLine}" +
                       $"`Filter by path` - show books filtered by chosen paths{Environment.NewLine}" +
                       $"`Show all books` - show all books in library";
-
+                      
         await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: replyMarkup, parseMode: ParseMode.Markdown);
     }
 
-    public async Task SendMessageWithInlineKeyboardAsync(long chatId, string message, string[] keys)
+    public async Task SendFilterMenuMessageWithKeyboardAsync(long chatId)
     {
-        var inlineKeyboardMarkup = GetInlineKeybordInTwoColumns( keys.Select(key => key).Append("Clear filters").Append("Show all books"));
-        await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: inlineKeyboardMarkup);
+        var replyKeyboard = GetFilterMenuKeyboard();
+        var message = $"Welcome to `Filter by path` menu{Environment.NewLine}" +
+                      $"`Clear filters` - send you new message without added filters{Environment.NewLine}" +
+                      $"`Show filtered` - show books filtered by chosen paths";
+
+        await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: replyKeyboard, parseMode: ParseMode.Markdown);
+    }
+
+    public async Task SendTextMessageAsync(long chatId, string message)
+    {
+        await _botClient.SendTextMessageAsync(chatId, message);
     }
 
     private InlineKeyboardMarkup GetInlineKeybordInTwoColumns(IEnumerable<string> keys)
@@ -202,14 +224,9 @@ public class MessageService : IMessageService
         return new InlineKeyboardMarkup(inlineButtonsTwoColumns.ToArray());
     }
 
-    private List<InlineKeyboardButton> CreatePathButtons(string[] paths)
-    {
-        return paths.Select(path => InlineKeyboardButton.WithCallbackData(path)).ToList();
-    }
-
     private ReplyKeyboardMarkup GetLibraryMenuMarkup()
     {
-        return new ReplyKeyboardMarkup(new []
+        return new ReplyKeyboardMarkup(new[]
         {
             new KeyboardButton[] { "Search books", "Filter by path" },
             new KeyboardButton[] { "Show all books" },
@@ -220,6 +237,17 @@ public class MessageService : IMessageService
         };
     }
 
+    private ReplyKeyboardMarkup GetFilterMenuKeyboard()
+    {
+        return new ReplyKeyboardMarkup(new[]
+        {
+            new KeyboardButton[] { "Clear filters", "Show filtered" },
+            new KeyboardButton[] { "Cancel"}
+        })
+        {
+            ResizeKeyboard = true
+        };
+    }
     private ReplyKeyboardMarkup CreateReplyKeyboardMarkup(params string[] nameButtons)
     {
         List<KeyboardButton> buttons = new List<KeyboardButton>();
