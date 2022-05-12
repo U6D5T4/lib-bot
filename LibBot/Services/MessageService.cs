@@ -84,21 +84,20 @@ public class MessageService : IMessageService
         return await _botClient.SendTextMessageAsync(chatId, messageText, replyMarkup: inlineKeyboardMarkup);
     }
 
-    public async Task CreateUserBookButtons(long chatId, List<BookDataResponse> books)
+    public async Task CreateUserBookButtonsAsync(long chatId, List<BookDataResponse> books)
     {
         var sortedBooks = books.OrderBy(x => x.TakenToRead).ToList();
         var buttons = new List<InlineKeyboardButton>();
-        var borrowedDateList = new List<string>();
+        var returnDateList = new List<string>();
         var isNeedSendMessage = false;
         var messageText = string.Empty;
 
         foreach (BookDataResponse book in sortedBooks)
         {
-            var date = (DateTime)book.TakenToRead;
-            var borrowedDate = date.AddMonths(2).ToLocalTime().ToShortDateString();
-            if (!borrowedDateList.Contains(borrowedDate))
+            var returnDate = book.TakenToRead.Value.AddMonths(2).ToLocalTime().ToShortDateString();
+            if (!returnDateList.Contains(returnDate))
             {
-                borrowedDateList.Add(borrowedDate);
+                returnDateList.Add(returnDate);
 
                 if (isNeedSendMessage)
                 {
@@ -107,7 +106,7 @@ public class MessageService : IMessageService
                     buttons = new List<InlineKeyboardButton>();
                 }
                 isNeedSendMessage = true;
-                messageText = "Return till " + borrowedDate;
+                messageText = "Return till " + returnDate;
             }
             var buttonText = book.Title;
             var callbackData = book.Id.ToString();
@@ -122,7 +121,7 @@ public class MessageService : IMessageService
         }
     }
 
-    public List<InlineKeyboardButton> CreateUserButtonsForUpdate(List<BookDataResponse> books)
+    private List<InlineKeyboardButton> CreateUserButtonsForUpdate(List<BookDataResponse> books)
     {
         var sortedBooks = books.OrderBy(x => x.TakenToRead).ToList();
         var buttons = new List<InlineKeyboardButton>();
@@ -144,7 +143,7 @@ public class MessageService : IMessageService
         await _botClient.EditMessageReplyMarkupAsync(message.Chat.Id, message.MessageId, inlineKeyboardMarkup);
     }
 
-    public async Task UpdateUserBookButtons(Message message, List<BookDataResponse> books)
+    public async Task UpdateUserBookButtonsAsync(Message message, List<BookDataResponse> books)
     {
         if (books.Count != 0)
         {

@@ -2,7 +2,6 @@ using LibBot.Models;
 using LibBot.Models.SharePointResponses;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -28,6 +27,6 @@ public interface IMessageService
     Task SendLibraryMenuMessageAsync(long chatId);
     Task SendFilterMenuMessageWithKeyboardAsync(long chatId);
     Task SendTextMessageAsync(long chatId, string message);
-    Task CreateUserBookButtons(long chatId, List<BookDataResponse> books);
-    Task UpdateUserBookButtons(Message message, List<BookDataResponse> books);
+    Task CreateUserBookButtonsAsync(long chatId, List<BookDataResponse> books);
+    Task UpdateUserBookButtonsAsync(Message message, List<BookDataResponse> books);
 }
