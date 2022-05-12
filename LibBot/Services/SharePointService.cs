@@ -82,18 +82,22 @@ public class SharePointService : ISharePointService
     }
 
 
-    public async Task<bool> IsBorrowedBookAsync(int bookId)
+    public async Task<IsBorrowedBookResponse> IsBorrowedBookAsync(int bookId)
     {
+        var data = new IsBorrowedBookResponse();
         var client = _clientFactory.CreateClient("SharePoint");
 
-        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Id,BookReaderId&$filter=Id eq {bookId}");
+        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Id,BookReaderId,TakenToRead&$filter=Id eq {bookId}");
 
         var contentsString = await httpResponse.Content.ReadAsStringAsync();
         var dataBooks = Book.FromJson(contentsString);
 
         var result = Book.GetBookDataResponse(dataBooks);
 
-        return result[0].BookReaderId is not null ? true : false ;
+         data.IsBorrowedBook = result[0].BookReaderId is not null ? true : false ;
+         data.TakenToRead = result[0].TakenToRead;
+
+         return data;
     }
     public async Task<List<BookDataResponse>> GetBooksAsync(int pageNumber)
     {
