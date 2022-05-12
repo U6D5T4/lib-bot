@@ -8,8 +8,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Web;
-using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -171,7 +169,7 @@ public class HandleUpdateService : IHandleUpdateService
             case "my books":
                 var chatInfoUserBooks = new ChatDbModel(message.Chat.Id, message.MessageId + 1, ChatState.UserBooks);
                 user = await _userService.GetUserByChatIdAsync(message.Chat.Id);
-                var myBooks = await _sharePointService.GetBooksFromSharePointAsync(chatInfoUserBooks.PageNumber, user.SharePointId);
+                var myBooks = await _sharePointService.GetBooksAsync(chatInfoUserBooks.PageNumber, user.SharePointId);
                 if (myBooks.Count != 0)
                     await _messageService.DisplayBookButtons(chatInfoUserBooks.ChatId, "These are your books.", myBooks, chatInfoUserBooks.ChatState);
                 else
@@ -215,7 +213,7 @@ public class HandleUpdateService : IHandleUpdateService
                 var chatInfo = await _chatService.GetChatInfoAsync(message.Chat.Id, message.MessageId - 2);
                 if (chatInfo is not null && chatInfo.ChatState == ChatState.SearchBooks)
                 {
-                    chatInfo.SearchQuery = HttpUtility.UrlEncode(message.Text.Trim());
+                    chatInfo.SearchQuery = message.Text.Trim();
                     await _chatService.SaveChatInfoAsync(chatInfo);
                     var searchBooks = await GetBookDataResponses(chatInfo.PageNumber, chatInfo);
                     if (searchBooks.Count != 0)
@@ -366,7 +364,7 @@ public class HandleUpdateService : IHandleUpdateService
                 if (data.ChatState == ChatState.UserBooks)
                 {
                     var userForNo = await _userService.GetUserByChatIdAsync(data.ChatId);
-                    var booksAfterNo = await _sharePointService.GetBooksFromSharePointAsync(data.PageNumber, userForNo.SharePointId);
+                    var booksAfterNo = await _sharePointService.GetBooksAsync(data.PageNumber, userForNo.SharePointId);
                     await _messageService.EditMessageAfterYesAndNoButtonsAsync(callbackQuery, "These are your books.");
                     await UpdateInlineButtonsAsync(callbackQuery, booksAfterNo, firstPage, data.ChatState);
                 }
@@ -383,8 +381,18 @@ public class HandleUpdateService : IHandleUpdateService
                 if (data.ChatState == ChatState.AllBooks)
                 {
                     ChangeBookStatusRequest borrowBook = new ChangeBookStatusRequest(user.SharePointId, user.SharePointId, DateTime.UtcNow, DateTime.UtcNow);
-                    await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, borrowBook);
-                    var allBooksAfterYes = await UpdateBooksLibrary(callbackQuery, data);
+                    List<BookDataResponse> allBooksAfterYes;
+
+                    if (!await _sharePointService.IsBorrowedBookAsync(data.BookId))
+                        {
+                            await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, borrowBook);
+                        }
+                    else
+                        {
+                            await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Something went wrong. This book is already borrowed.");
+                        }
+
+                    allBooksAfterYes = await UpdateBooksLibrary(callbackQuery, data);
                     await _messageService.EditMessageAfterYesAndNoButtonsAsync(callbackQuery, $"These books are in our library.{Environment.NewLine}" + GetFiltersAsAStringMessage(data.Filters));
                     await UpdateInlineButtonsAsync(callbackQuery, allBooksAfterYes, firstPage, data.ChatState);
                 }
@@ -392,7 +400,16 @@ public class HandleUpdateService : IHandleUpdateService
                 if (data.ChatState == ChatState.UserBooks)
                 {
                     ChangeBookStatusRequest returnBook = new ChangeBookStatusRequest(null, user.SharePointId, null, DateTime.UtcNow);
-                    await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, returnBook);
+
+                    if (await _sharePointService.IsBorrowedBookAsync(data.BookId))
+                    {
+                        await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, returnBook);
+                    }
+                    else
+                    {
+                        await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Something went wrong. This book was not borrowed.");
+                    }
+
                     var userBooksAfterYes = await UpdateBooksLibrary(callbackQuery, data);
                     if (userBooksAfterYes.Count != 0)
                         await _messageService.EditMessageAfterYesAndNoButtonsAsync(callbackQuery, "These are your books.");
@@ -407,10 +424,19 @@ public class HandleUpdateService : IHandleUpdateService
                 if (data.ChatState == ChatState.SearchBooks)
                 {
                     ChangeBookStatusRequest borrowBook = new ChangeBookStatusRequest(user.SharePointId, user.SharePointId, DateTime.UtcNow, DateTime.UtcNow);
-                    await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, borrowBook);
-                    var booksAfterYes = await GetBookDataResponses(data.PageNumber, data);
+ 
+                    if (!await _sharePointService.IsBorrowedBookAsync(data.BookId))
+                    {
+                        await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, borrowBook);
+                    }
+                    else
+                    {
+                        await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Something went wrong. This book is already borrowed.");
+                    }
+
+                    var searchBooksAfterYes = await UpdateBooksLibrary(callbackQuery, data);
                     await _messageService.EditMessageAfterYesAndNoButtonsAsync(callbackQuery, "This is the result of your search query.");
-                    await UpdateInlineButtonsAsync(callbackQuery, booksAfterYes, firstPage, data.ChatState);
+                    await UpdateInlineButtonsAsync(callbackQuery, searchBooksAfterYes, firstPage, data.ChatState);
                 }
 
                 break;
@@ -474,15 +500,15 @@ public class HandleUpdateService : IHandleUpdateService
     {
         if (data.Filters is not null && data.Filters.Count > 0)
         {
-            return await _sharePointService.GetBooksFromSharePointAsync(pageNumber, data.Filters);
+            return await _sharePointService.GetBooksAsync(pageNumber, data.Filters);
         }
 
         if (!string.IsNullOrWhiteSpace(data.SearchQuery))
         {
-            return await _sharePointService.GetBooksFromSharePointAsync(pageNumber, data.SearchQuery);
+            return await _sharePointService.GetBooksAsync(pageNumber, data.SearchQuery);
         }
 
-        return await _sharePointService.GetBooksFromSharePointAsync(pageNumber);
+        return await _sharePointService.GetBooksAsync(pageNumber);
     }
     private async Task UpdateInlineButtonsAsync(CallbackQuery callbackQuery, List<BookDataResponse> books, bool firstPage, ChatState chatState)
     {
@@ -491,14 +517,15 @@ public class HandleUpdateService : IHandleUpdateService
 
     private async Task<List<BookDataResponse>> UpdateBooksLibrary(CallbackQuery callbackQuery, ChatDbModel data)
     {
-        if (data.ChatState == ChatState.AllBooks)
+        await _sharePointService.UpdateBookData();
+        if (data.ChatState != ChatState.UserBooks)
         {
             return await GetBookDataResponses(data.PageNumber, data);
         }
         else
         {
             var userForNext = await _userService.GetUserByChatIdAsync(callbackQuery.Message.Chat.Id);
-            return await _sharePointService.GetBooksFromSharePointAsync(data.PageNumber, userForNext.SharePointId);
+            return await _sharePointService.GetBooksAsync(data.PageNumber, userForNext.SharePointId);
         }
     }
 

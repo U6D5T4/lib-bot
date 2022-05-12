@@ -137,7 +137,8 @@ public class MessageService : IMessageService
         var borrowedDateList = new List<string>();
         foreach (BookDataResponse book in sortedBooks)
         {
-            var borrowedDate = book.TakenToRead.AddMonths(2).ToLocalTime().ToShortDateString();
+            var date = (DateTime)book.TakenToRead;
+            var borrowedDate = date.AddMonths(2).ToLocalTime().ToShortDateString();
             if (!borrowedDateList.Contains(borrowedDate))
             {
                 borrowedDateList.Add(borrowedDate);

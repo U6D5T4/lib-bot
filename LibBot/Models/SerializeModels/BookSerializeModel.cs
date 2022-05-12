@@ -42,7 +42,7 @@ public class Result
     public int? BookReaderId { get; set; }
 
     [JsonProperty("TakenToRead")]
-    public DateTime TakenToRead { get; set; }
+    public DateTime? TakenToRead { get; set; }
 
     [JsonProperty("Technology")]
     public Technology Technology { get; set; }
