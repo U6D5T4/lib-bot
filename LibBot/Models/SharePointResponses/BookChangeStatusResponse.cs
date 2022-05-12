@@ -6,4 +6,5 @@ public class BookChangeStatusResponse
 {
     public bool IsBorrowedBook { get; set; }
     public DateTime? TakenToRead { get; set; }
+    public string Title { get; set; }
 }
