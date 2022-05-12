@@ -201,6 +201,16 @@ public class MessageService : IMessageService
         await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: replyKeyboard, parseMode: ParseMode.Markdown);
     }
 
+    public async Task SendHelpMenuAsync(long chatId)
+    {
+        var replyMarkup = GetHelpMenuMarkup();
+        var message = $"Welcome to `Help` menu{Environment.NewLine}" +
+                      $"`About` - show info about bot and its actual version{Environment.NewLine}" +
+                      $"`Feedback` - send feedback about your user experience or suggest new features";
+
+        await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: replyMarkup, parseMode: ParseMode.Markdown);
+    }
+
     public async Task SendTextMessageAsync(long chatId, string message)
     {
         await _botClient.SendTextMessageAsync(chatId, message);
@@ -224,13 +234,25 @@ public class MessageService : IMessageService
         return new InlineKeyboardMarkup(inlineButtonsTwoColumns.ToArray());
     }
 
+    private ReplyKeyboardMarkup GetHelpMenuMarkup()
+    {
+        return new ReplyKeyboardMarkup(new[]
+        {
+            new KeyboardButton[] { "About", "Feedback" },
+            new KeyboardButton[] { "Cancel"}
+        })
+        {
+            ResizeKeyboard = true
+        };
+    }
+
     private ReplyKeyboardMarkup GetLibraryMenuMarkup()
     {
         return new ReplyKeyboardMarkup(new[]
         {
             new KeyboardButton[] { "Search books", "Filter by path" },
             new KeyboardButton[] { "Show all books" },
-            new KeyboardButton[] { "Cancel"}
+            new KeyboardButton[] { "Help", "Cancel"}
         })
         {
             ResizeKeyboard = true

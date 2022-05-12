@@ -4,7 +4,9 @@ using LibBot.Models.SharePointResponses;
 using LibBot.Services.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Web;
 using Telegram.Bot;
@@ -186,6 +188,24 @@ public class HandleUpdateService : IHandleUpdateService
                 await _messageService.AksToEnterSearchQueryAsync(message);
                 break;
 
+            case "help":
+                await _messageService.SendHelpMenuAsync(message.Chat.Id);
+                user = await _userService.GetUserByChatIdAsync(message.Chat.Id);
+                user.MenuState = MenuState.Help;
+                await _userService.UpdateUserAsync(user);
+                break;
+
+            case "about":
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+                string version = fileVersionInfo.FileVersion;
+                await _messageService.SendTextMessageAsync(message.Chat.Id, $"@U6LibBot_bot, {version}");
+                break;
+
+            case "feedback":
+
+                break;
+
             case "cancel":
                 user = await _userService.GetUserByChatIdAsync(message.Chat.Id);
                 await HandleCancelOptionAsync(user);
@@ -256,6 +276,7 @@ public class HandleUpdateService : IHandleUpdateService
                 break;
             case MenuState.SearchBooks:
             case MenuState.AllBooks:
+            case MenuState.Help:
             case MenuState.FilteredBooks:
                 user.MenuState = MenuState.Library;
                 await _messageService.SendLibraryMenuMessageAsync(user.ChatId);
@@ -279,26 +300,12 @@ public class HandleUpdateService : IHandleUpdateService
         {
             case "show all books":
                 List<BookDataResponse> allBooks = await GetBookDataResponses(data.PageNumber, data);
-                await _messageService.UpdateBookButtonsAndMessageText(data.ChatId, data.MessageId,
+                await _messageService.UpdateBookButtonsAndMessageTextAsync(data.ChatId, data.MessageId,
                     $"These books are in our library.{Environment.NewLine}" + GetFiltersAsAStringMessage(data.Filters), allBooks, firstPage, ChatState.AllBooks);
                 data.ChatState = ChatState.AllBooks;
                 await _chatService.UpdateChatInfoAsync(data);
                 break;
 
-            case "clear filters":
-                {
-                    if (data.Filters is null || data.Filters.Count == 0)
-                    {
-                        return;
-                    }
-
-                    data.Filters = null;
-                    var bookPaths = await _sharePointService.GetBookPathsAsync();
-                    await _messageService.UpdateInlineButtonsWithMessage(data.ChatId, data.MessageId,
-                        "Choose paths for books.", bookPaths);
-                    await _chatService.UpdateChatInfoAsync(data);
-                    break;
-                }
             case "next":
                 if (data.ChatState == ChatState.AllBooks)
                 {
