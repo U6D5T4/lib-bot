@@ -36,13 +36,7 @@ public class MailService : IMailService
                    + "If you got this email, but Username is not yours, then just ignore it."
         };
 
-        using (var client = new SmtpClient())
-        {
-            await client.ConnectAsync(_emailConfiguration.Host, _emailConfiguration.Port, SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync(_botCredentialsConfiguration.Login, _botCredentialsConfiguration.Password);
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
-        }
+        await SendEmailAsync(message);
     }
 
     public async Task SendFeedbackAsync(string feedback)
@@ -57,6 +51,11 @@ public class MailService : IMailService
             Text = feedback
         };
 
+        await SendEmailAsync(message);
+    }
+
+    private async Task SendEmailAsync(MimeMessage message)
+    {
         using (var client = new SmtpClient())
         {
             await client.ConnectAsync(_emailConfiguration.Host, _emailConfiguration.Port, SecureSocketOptions.StartTls);
