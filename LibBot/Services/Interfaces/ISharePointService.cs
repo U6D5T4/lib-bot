@@ -15,8 +15,8 @@ public interface ISharePointService
     Task<List<BookDataResponse>> GetBooksAsync(int pageNumber, List<string> filters);
     Task<List<BookDataResponse>> GetBooksAsync(int pageNumber, string searchQuery);
     Task<List<BookDataResponse>> GetBooksAsync(int pageNumber, int? userId);
-    Task<List<BookDataResponse>> UpdateBookData();
-    Task<List<BookDataResponse>> GetBookData();
-    Task<bool> IsBorrowedBookAsync(int bookId);
+    Task<List<BookDataResponse>> UpdateBooksData();
+    Task<List<BookDataResponse>> GetBooksData();
+    Task<BookChangeStatusResponse> GetDataAboutBookAsync(int bookId);
 
 }

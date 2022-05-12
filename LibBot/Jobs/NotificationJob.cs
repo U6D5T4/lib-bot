@@ -39,19 +39,17 @@ class NotificationJob : IJob
             {
                 if (book.BookReaderId == user.SharePointId)
                 {
-                    var date = (DateTime)book.TakenToRead;
-
-                    if (date.AddMonths(2).AddDays(-14).ToShortDateString() == DateTime.UtcNow.ToShortDateString())
+                    if (book.TakenToRead.Value.AddMonths(2).AddDays(-14).ToShortDateString() == DateTime.UtcNow.ToShortDateString())
                     {
                         await _botClient.SendTextMessageAsync(user.ChatId, "There are 2 weeks left until the end of the book return period");
                     }
 
-                    if (date.AddMonths(2).AddDays(-7).ToShortDateString() == DateTime.UtcNow.ToShortDateString())
+                    if (book.TakenToRead.Value.AddMonths(2).AddDays(-7).ToShortDateString() == DateTime.UtcNow.ToShortDateString())
                     {
                         await _botClient.SendTextMessageAsync(user.ChatId, "There are 1 week left until the end of the book return period");
                     }
 
-                    if (date.AddMonths(2).AddDays(-3).ToShortDateString() == DateTime.UtcNow.ToShortDateString())
+                    if (book.TakenToRead.Value.AddMonths(2).AddDays(-3).ToShortDateString() == DateTime.UtcNow.ToShortDateString())
                     {
                         await _botClient.SendTextMessageAsync(user.ChatId, "There are 3 days left until the end of the book return period");
                     }

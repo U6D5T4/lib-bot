@@ -2,7 +2,6 @@ using LibBot.Models;
 using LibBot.Models.SharePointResponses;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -18,7 +17,6 @@ public interface IMessageService
     Task<Message> SayThisBookIsAlreadyBorrowAsync(Message message);
     Task CreateYesAndNoButtonsAsync(CallbackQuery callbackQuery, string message);
     List<InlineKeyboardButton> CreateBookButtonsAsync(List<BookDataResponse> books, bool firstPage);
-    List<InlineKeyboardButton> CreateUserBookButtonsAsync(List<BookDataResponse> books);
     Task<Message> DisplayBookButtons(long chatId, string messageText, List<BookDataResponse> books, ChatState chatState);
     Task UpdateBookButtons(Message message, List<BookDataResponse> books, bool firstPage, ChatState chatState);
     Task UpdateBookButtonsAndMessageTextAsync(long chatId, int messageId, string messageText, List<BookDataResponse> books, bool firstPage, ChatState chatState);
@@ -29,6 +27,8 @@ public interface IMessageService
     Task SendLibraryMenuMessageAsync(long chatId);
     Task SendFilterMenuMessageWithKeyboardAsync(long chatId);
     Task SendTextMessageAsync(long chatId, string message);
+    Task CreateUserBookButtonsAsync(long chatId, List<BookDataResponse> books);
+    Task UpdateUserBookButtonsAsync(Message message, List<BookDataResponse> books);
     Task SendHelpMenuAsync(long chatId);
     Task SendFeedbackMenuAsync(long chatId);
 }
