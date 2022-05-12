@@ -65,16 +65,19 @@ public class Startup
 
         #region Adding JobType
         services.AddSingleton<NotificationJob>();
+        services.AddSingleton<UpdateBooksJob>();
         #endregion
 
         #region Adding Jobs 
         List<JobMetadata> jobMetadatas = new List<JobMetadata>();
         jobMetadatas.Add(new JobMetadata(Guid.NewGuid(), typeof(NotificationJob), "Notify Job", "0 0 12 * * ?"));
+        jobMetadatas.Add(new JobMetadata(Guid.NewGuid(), typeof(UpdateBooksJob), "Update Books Job", "0 0 8,12,16,20 ? * * *"));
+
 
         services.AddSingleton(jobMetadatas);
         #endregion
 
-        services.AddHostedService<NotificationSchedular>();
+        services.AddHostedService<JobsSchedular>();
 
         services.AddControllers().AddNewtonsoftJson();
     }

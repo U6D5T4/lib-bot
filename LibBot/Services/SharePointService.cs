@@ -10,22 +10,19 @@ using Newtonsoft.Json;
 
 namespace LibBot.Services;
 
-public class SharePointService : ISharePointService
+public class SharePointService : BooksStorage, ISharePointService
 {
     private readonly IHttpClientFactory _clientFactory;
     private readonly IFileService _fileService;
 
-    private static List<BookDataResponse> books;
-
     public async Task<List<BookDataResponse>> GetBookData()
     {
-        return books is null ? await GetAllBooksFromSharePointAsync() : books; 
+        return Books is null ? await GetAllBooksFromSharePointAsync() : Books; 
     }
 
-    public async Task<List<BookDataResponse>> UpdateBookData()
+    public async Task UpdateBookData()
     {
-        books = await GetAllBooksFromSharePointAsync();
-        return books;
+        Books = await GetAllBooksFromSharePointAsync();
     }
 
     public static int AmountBooks { get; } = 8;
