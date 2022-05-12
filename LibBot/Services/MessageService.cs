@@ -59,11 +59,9 @@ public class MessageService : IMessageService
     public async Task<Message> SendWelcomeMessageAsync(long chatId)
     {
         var message = "Hey, I'm LibBot. Choose the option";
-        var replyMarkup = CreateReplyKeyboardMarkup("Library", "My books", "Help");
+        var replyMarkup = GetMainMenu();
         return await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: replyMarkup);
     }
-
-
 
     public async Task CreateYesAndNoButtonsAsync(CallbackQuery callbackQuery, string message)
     {
@@ -244,6 +242,18 @@ public class MessageService : IMessageService
         }
 
         return new InlineKeyboardMarkup(inlineButtonsTwoColumns.ToArray());
+    }
+
+    private ReplyKeyboardMarkup GetMainMenu()
+    {
+        return new ReplyKeyboardMarkup(new[]
+        {
+            new KeyboardButton[] { "Library", "My books" },
+            new KeyboardButton[] { "Help" }
+        })
+        {
+            ResizeKeyboard = true
+        };
     }
 
     private ReplyKeyboardMarkup GetHelpMenuMarkup()
