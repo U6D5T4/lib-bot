@@ -150,4 +150,8 @@ public class UserService : IUserService
         return await _codeDbService.ReadItemAsync(chatId);
     }
 
+    public async Task SendFeedbackAsync(string feedback)
+    {
+        await _mailService.SendFeedbackAsync(feedback);
+    }
 }

@@ -30,4 +30,5 @@ public interface IMessageService
     Task SendFilterMenuMessageWithKeyboardAsync(long chatId);
     Task SendTextMessageAsync(long chatId, string message);
     Task SendHelpMenuAsync(long chatId);
+    Task SendFeedbackMenuAsync(long chatId);
 }

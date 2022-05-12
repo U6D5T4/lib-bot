@@ -59,7 +59,7 @@ public class MessageService : IMessageService
     public async Task<Message> SendWelcomeMessageAsync(long chatId)
     {
         var message = "Hey, I'm LibBot. Choose the option";
-        var replyMarkup = CreateReplyKeyboardMarkup("Library", "My books");
+        var replyMarkup = CreateReplyKeyboardMarkup("Library", "My books", "Help");
         return await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: replyMarkup);
     }
 
@@ -188,7 +188,7 @@ public class MessageService : IMessageService
                       $"`Search books` - search all books in library by name{Environment.NewLine}" +
                       $"`Filter by path` - show books filtered by chosen paths{Environment.NewLine}" +
                       $"`Show all books` - show all books in library";
-                      
+
         await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: replyMarkup, parseMode: ParseMode.Markdown);
     }
 
@@ -215,6 +215,17 @@ public class MessageService : IMessageService
     public async Task SendTextMessageAsync(long chatId, string message)
     {
         await _botClient.SendTextMessageAsync(chatId, message);
+    }
+
+    public async Task SendFeedbackMenuAsync(long chatId)
+    {
+        var replyMarkup = new ReplyKeyboardMarkup(new[] { new KeyboardButton[] { "Cancel" } })
+        {
+            ResizeKeyboard = true
+        };
+
+        var message = $"Please enter your feedback";
+        await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: replyMarkup);
     }
 
     private InlineKeyboardMarkup GetInlineKeybordInTwoColumns(IEnumerable<string> keys)
@@ -253,7 +264,7 @@ public class MessageService : IMessageService
         {
             new KeyboardButton[] { "Search books", "Filter by path" },
             new KeyboardButton[] { "Show all books" },
-            new KeyboardButton[] { "Help", "Cancel"}
+            new KeyboardButton[] { "Cancel"}
         })
         {
             ResizeKeyboard = true

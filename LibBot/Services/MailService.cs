@@ -44,4 +44,25 @@ public class MailService : IMailService
             await client.DisconnectAsync(true);
         }
     }
+
+    public async Task SendFeedbackAsync(string feedback)
+    {
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress(_emailConfiguration.DisplayName, _botCredentialsConfiguration.Login));
+        message.To.Add(new MailboxAddress(_emailConfiguration.DisplayName, _botCredentialsConfiguration.Login));
+        message.Subject = "Feedback";
+
+        message.Body = new TextPart("plain")
+        {
+            Text = feedback
+        };
+
+        using (var client = new SmtpClient())
+        {
+            await client.ConnectAsync(_emailConfiguration.Host, _emailConfiguration.Port, SecureSocketOptions.StartTls);
+            await client.AuthenticateAsync(_botCredentialsConfiguration.Login, _botCredentialsConfiguration.Password);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
+        }
+    }
 }

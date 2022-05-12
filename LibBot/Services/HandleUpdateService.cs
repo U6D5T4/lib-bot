@@ -194,14 +194,15 @@ public class HandleUpdateService : IHandleUpdateService
                 break;
 
             case "about":
-                Assembly assembly = Assembly.GetExecutingAssembly();
-                FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
-                string version = fileVersionInfo.FileVersion;
-                await _messageService.SendTextMessageAsync(message.Chat.Id, $"@U6LibBot_bot, {version}");
+                
+                await _messageService.SendTextMessageAsync(message.Chat.Id, $"@U6LibBot_bot, v{GetBotVersion()}");
                 break;
 
             case "feedback":
-
+                await _messageService.SendFeedbackMenuAsync(message.Chat.Id);
+                user = await _userService.GetUserByChatIdAsync(message.Chat.Id);
+                user.MenuState = MenuState.Feedback;
+                await _userService.UpdateUserAsync(user);
                 break;
 
             case "cancel":
@@ -210,6 +211,21 @@ public class HandleUpdateService : IHandleUpdateService
                 break;
 
             default:
+                user = await _userService.GetUserByChatIdAsync(message.Chat.Id);
+                if (user.MenuState == MenuState.Feedback)
+                {
+                    await _messageService.SendTextMessageAsync(message.Chat.Id, "Thanks!");
+                    await HandleCancelOptionAsync(user);
+                    var feedback = $"Date: {message.Date}{Environment.NewLine}" +
+                                   $"From: {message.From.FirstName} {message.From.LastName}, @{message.From.Username}{Environment.NewLine}" +
+                                   $"BotVersion: v{GetBotVersion()}{Environment.NewLine}" +
+                                   $"ChatId: {message.Chat.Id}{Environment.NewLine}" +
+                                   $"Message: {message.Text}";
+                    
+                     await _userService.SendFeedbackAsync(feedback);
+                    return;
+                }
+
                 var chatInfo = await _chatService.GetChatInfoAsync(message.Chat.Id, message.MessageId - 2);
                 if (chatInfo is not null && chatInfo.ChatState == ChatState.SearchBooks)
                 {
@@ -268,16 +284,20 @@ public class HandleUpdateService : IHandleUpdateService
         {
             case MenuState.None:
             case MenuState.Library:
+            case MenuState.Help:
             case MenuState.MyBooks:
                 user.MenuState = MenuState.None;
                 await _messageService.SendWelcomeMessageAsync(user.ChatId);
                 break;
             case MenuState.SearchBooks:
             case MenuState.AllBooks:
-            case MenuState.Help:
             case MenuState.FilteredBooks:
                 user.MenuState = MenuState.Library;
                 await _messageService.SendLibraryMenuMessageAsync(user.ChatId);
+                break;
+            case MenuState.Feedback:
+                user.MenuState = MenuState.Help;
+                await _messageService.SendHelpMenuAsync(user.ChatId);
                 break;
             default:
                 break;
@@ -532,5 +552,12 @@ public class HandleUpdateService : IHandleUpdateService
     private Task UnknownUpdateHandlerAsync(Update update)
     {
         return Task.CompletedTask;
+    }
+
+    private string GetBotVersion()
+    {
+        Assembly assembly = Assembly.GetExecutingAssembly();
+        FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+        return fileVersionInfo.FileVersion;
     }
 }
