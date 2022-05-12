@@ -406,6 +406,7 @@ public class HandleUpdateService : IHandleUpdateService
                     if (!await _sharePointService.IsBorrowedBookAsync(data.BookId))
                         {
                             await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, borrowBook);
+                            await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "You have successfully borrowed a book.");
                         }
                     else
                         {
@@ -424,6 +425,7 @@ public class HandleUpdateService : IHandleUpdateService
                     if (await _sharePointService.IsBorrowedBookAsync(data.BookId))
                     {
                         await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, returnBook);
+                        await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "You have successfully returned a book.");
                     }
                     else
                     {
@@ -448,6 +450,7 @@ public class HandleUpdateService : IHandleUpdateService
                     if (!await _sharePointService.IsBorrowedBookAsync(data.BookId))
                     {
                         await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, borrowBook);
+                        await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "You have successfully borrowed a book.");
                     }
                     else
                     {
