@@ -29,4 +29,6 @@ public interface IMessageService
     Task SendTextMessageAsync(long chatId, string message);
     Task CreateUserBookButtonsAsync(long chatId, List<BookDataResponse> books);
     Task UpdateUserBookButtonsAsync(Message message, List<BookDataResponse> books);
+    Task SendHelpMenuAsync(long chatId);
+    Task SendFeedbackMenuAsync(long chatId);
 }

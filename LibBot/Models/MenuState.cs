@@ -7,5 +7,7 @@ public enum MenuState
     MyBooks,
     SearchBooks,
     AllBooks,
-    FilteredBooks
+    FilteredBooks,
+    Help,
+    Feedback
 }
