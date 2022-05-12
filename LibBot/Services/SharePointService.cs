@@ -82,9 +82,9 @@ public class SharePointService : ISharePointService
     }
 
 
-    public async Task<IsBorrowedBookResponse> GetDataAboutBookAsync(int bookId)
+    public async Task<BookChangeStatusResponse> GetDataAboutBookAsync(int bookId)
     {
-        var data = new IsBorrowedBookResponse();
+        var data = new BookChangeStatusResponse();
         var client = _clientFactory.CreateClient("SharePoint");
 
         var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Id,BookReaderId,TakenToRead&$filter=Id eq {bookId}");
