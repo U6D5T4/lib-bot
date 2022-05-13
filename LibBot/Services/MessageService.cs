@@ -46,12 +46,6 @@ public class MessageService : IMessageService
             "Please, enter book's name", replyMarkup: replyKeyboard);
     }
 
-    public async Task<Message> SayThisBookIsAlreadyBorrowAsync(Message message)
-    {
-        return await _botClient.SendTextMessageAsync(message.Chat.Id,
-            "Sorry, this book is already borrowed.");
-    }
-
     public async Task EditMessageAfterYesAndNoButtonsAsync(CallbackQuery callbackQuery, string message)
     {
         await _botClient.EditMessageTextAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId, message);
@@ -64,6 +58,10 @@ public class MessageService : IMessageService
         return await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: replyMarkup);
     }
 
+    public async Task AnswerCallbackQueryAsync(string callbackQueryId, string message)
+    {
+        await _botClient.AnswerCallbackQueryAsync(callbackQueryId, message);
+    }
     public async Task CreateYesAndNoButtonsAsync(CallbackQuery callbackQuery, string message)
     {
         var yesNoDict = new Dictionary<string, string>
@@ -169,7 +167,7 @@ public class MessageService : IMessageService
         foreach (BookDataResponse book in books)
         {
             var buttonText = (book.BookReaderId is null ? EmojiNewInSquare : EmojiLock) + $" {book.Title}";
-            var callbackData = book.BookReaderId is null ? book.Id.ToString() : "Borrowed";
+            var callbackData = book.Id.ToString();
             var button = InlineKeyboardButton.WithCallbackData(text: buttonText, callbackData: callbackData);
             buttons.Add(button);
         }
