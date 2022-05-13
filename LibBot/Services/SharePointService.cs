@@ -20,23 +20,14 @@ public class SharePointService : ISharePointService
 
     public async Task<List<BookDataResponse>> GetBooksData()
     {
-        if (LastDateUpdate.HasValue)
+        if (Books is null || !LastDateUpdate.HasValue)
         {
-            if (LastDateUpdate.Value.AddHours(2).ToUniversalTime() >= DateTime.UtcNow)
-            {
-                if (Books is null)
-                {
-                    Books = await GetAllBooksFromSharePointAsync();
-                    LastDateUpdate = DateTime.UtcNow;
-                }
-            }
-            else
-            {
-                Books = await GetAllBooksFromSharePointAsync();
-                LastDateUpdate = DateTime.UtcNow;
-            }
+            Books = await GetAllBooksFromSharePointAsync();
+            LastDateUpdate = DateTime.UtcNow;
+            return Books;
         }
-        else
+
+        if (LastDateUpdate.Value.AddHours(2).ToUniversalTime() <= DateTime.UtcNow)
         {
             Books = await GetAllBooksFromSharePointAsync();
             LastDateUpdate = DateTime.UtcNow;
