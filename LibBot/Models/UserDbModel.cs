@@ -8,4 +8,5 @@ public class UserDbModel
     public int SharePointId { get; set; }
     public string Email { get; set; }
     public bool IsConfirmed { get; set; }
+    public MenuState MenuState { get; set; }
 }

@@ -11,6 +11,9 @@ namespace LibBot.Services;
 
 public class MailService : IMailService
 {
+    private static readonly NLog.Logger _logger;
+    static MailService() => _logger = NLog.LogManager.GetCurrentClassLogger();
+
     private readonly EmailConfiguration _emailConfiguration;
     private readonly BotCredentialsConfiguration _botCredentialsConfiguration;
 
@@ -36,12 +39,40 @@ public class MailService : IMailService
                    + "If you got this email, but Username is not yours, then just ignore it."
         };
 
-        using (var client = new SmtpClient())
+        await SendEmailAsync(message);
+    }
+
+    public async Task SendFeedbackAsync(string feedback)
+    {
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress(_emailConfiguration.DisplayName, _botCredentialsConfiguration.Login));
+        message.To.Add(new MailboxAddress(_emailConfiguration.DisplayName, _botCredentialsConfiguration.Login));
+        message.Subject = "Feedback";
+
+        message.Body = new TextPart("plain")
         {
-            await client.ConnectAsync(_emailConfiguration.Host, _emailConfiguration.Port, SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync(_botCredentialsConfiguration.Login, _botCredentialsConfiguration.Password);
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
+            Text = feedback
+        };
+
+        await SendEmailAsync(message);
+    }
+
+    private async Task SendEmailAsync(MimeMessage message)
+    {
+        try
+        {
+            using (var client = new SmtpClient())
+            {
+                await client.ConnectAsync(_emailConfiguration.Host, _emailConfiguration.Port, SecureSocketOptions.StartTls);
+                await client.AuthenticateAsync(_botCredentialsConfiguration.Login, _botCredentialsConfiguration.Password);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error occurred when was trying to send an email");
+            throw;
         }
     }
 }

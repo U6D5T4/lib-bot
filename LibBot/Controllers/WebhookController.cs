@@ -7,12 +7,16 @@ namespace LibBot.Controllers;
 
 public class WebhookController : ControllerBase
 {
+    private static readonly NLog.Logger _logger;
+    static WebhookController() => _logger = NLog.LogManager.GetCurrentClassLogger();
+
     [HttpPost]
     public async Task<IActionResult> Post([FromServices] IHandleUpdateService handleUpdateService,
                                           [FromBody] Update update)
     {
         if (update is null)
         {
+            _logger.Warn($"{nameof(Update)} from telegram Api was null");
             return BadRequest();
         }
 

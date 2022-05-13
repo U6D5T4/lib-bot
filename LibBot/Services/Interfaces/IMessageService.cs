@@ -1,7 +1,7 @@
+using LibBot.Models;
 using LibBot.Models.SharePointResponses;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -9,18 +9,26 @@ namespace LibBot.Services.Interfaces;
 
 public interface IMessageService
 {
-    Task<Message> SendTextMessageAndClearKeyboardAsync(ITelegramBotClient bot, long chatId, string message);
-    Task<Message> AskToEnterOutlookLoginAsync(ITelegramBotClient bot, Message message);
-    Task<Message> AskToEnterAuthCodeAsync(ITelegramBotClient bot, Message message);
-    Task<Message> SayDefaultMessageAsync(ITelegramBotClient bot, Message message);
-    Task<Message> AksToEnterSearchQueryAsync(ITelegramBotClient bot, Message message);
-    Task<Message> SayThisBookIsAlreadyBorrowAsync(ITelegramBotClient bot, Message message);
-    Task CreateYesAndNoButtons(CallbackQuery callbackQuery, string message);
-    List<InlineKeyboardButton> CreateBookButtons(List<BookDataResponse> books);
-    Task<Message> DisplayBookButtons(long chatId, string messageText, List<BookDataResponse> books);
-    Task UpdateBookButtons(Message message, List<BookDataResponse> books);
-    Task UpdateBookButtonsAndMessageText(long chatId, int messageId, string messageText, List<BookDataResponse> books);
-    Task EditMessageAfterYesAndNoButtons(ITelegramBotClient bot, CallbackQuery callbackQuery, string messageText);
-    Task DisplayInlineButtonsWithMessage(Message message, string messageText, params string[] buttons);
-    Task UpdateInlineButtonsWithMessage(long chatId, int messageId, string messageText, string[] bookPaths);
+    Task<Message> SendTextMessageAndClearKeyboardAsync(long chatId, string message);
+    Task<Message> AskToEnterOutlookLoginAsync(Message message);
+    Task<Message> AskToEnterAuthCodeAsync(Message message);
+    Task<Message> SendWelcomeMessageAsync(long chatId);
+    Task<Message> AksToEnterSearchQueryAsync(Message message);
+    Task AnswerCallbackQueryAsync(string callbackQueryId, string message);
+    Task CreateYesAndNoButtonsAsync(CallbackQuery callbackQuery, string message);
+    List<InlineKeyboardButton> CreateBookButtonsAsync(List<BookDataResponse> books, bool firstPage);
+    Task<Message> DisplayBookButtons(long chatId, string messageText, List<BookDataResponse> books, ChatState chatState);
+    Task UpdateBookButtons(Message message, List<BookDataResponse> books, bool firstPage, ChatState chatState);
+    Task UpdateBookButtonsAndMessageTextAsync(long chatId, int messageId, string messageText, List<BookDataResponse> books, bool firstPage, ChatState chatState);
+    Task EditMessageAfterYesAndNoButtonsAsync(CallbackQuery callbackQuery, string messageText);
+    Task DisplayInlineButtonsWithMessageAsync(Message message, string messageText, params string[] buttons);
+    Task UpdateFilterBooksMessageWithInlineKeyboardAsync(long chatId, int messageId, string[] bookPaths, string message = null);
+    Task SendFilterBooksMessageWithInlineKeyboardAsync(long chatId, string message, string[] bookPaths);
+    Task SendLibraryMenuMessageAsync(long chatId);
+    Task SendFilterMenuMessageWithKeyboardAsync(long chatId);
+    Task SendTextMessageAsync(long chatId, string message);
+    Task CreateUserBookButtonsAsync(long chatId, List<BookDataResponse> books);
+    Task UpdateUserBookButtonsAsync(Message message, List<BookDataResponse> books);
+    Task SendHelpMenuAsync(long chatId);
+    Task SendFeedbackMenuAsync(long chatId);
 }
