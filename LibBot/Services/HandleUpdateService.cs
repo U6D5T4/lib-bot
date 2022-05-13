@@ -1,4 +1,4 @@
-﻿using LibBot.Models;
+using LibBot.Models;
 using LibBot.Models.SharePointRequests;
 using LibBot.Models.SharePointResponses;
 using LibBot.Services.Interfaces;
@@ -248,6 +248,8 @@ public class HandleUpdateService : IHandleUpdateService
                     await _messageService.SendWelcomeMessageAsync(message.Chat.Id);
                 break;
         }
+
+        await _userService.UpdateUserAsync(user);
     }
 
     private async Task HandleShowFilteredOptionAsync(Message message)
@@ -312,7 +314,7 @@ public class HandleUpdateService : IHandleUpdateService
 
         await _userService.UpdateUserAsync(user);
     }
-
+    
     private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery)
     {
         var data = await _chatService.GetChatInfoAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId);
@@ -325,7 +327,7 @@ public class HandleUpdateService : IHandleUpdateService
         }
 
         bool firstPage = data.PageNumber == 0;
-
+        
         switch (callbackQuery.Data.ToLower())
         {
             case "show all books":
@@ -431,7 +433,7 @@ public class HandleUpdateService : IHandleUpdateService
                         await UpdateInlineButtonsAsync(callbackQuery, books, true, data.ChatState);
                     }
                 }
-
+                
                 break;
 
 
