@@ -267,6 +267,11 @@ public class MessageService : IMessageService
         await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: replyMarkup);
     }
 
+    public async Task DeleteMessageAsync(long chatId, int messageId)
+    {
+        await _botClient.DeleteMessageAsync(chatId, messageId);
+    }
+
     private InlineKeyboardMarkup GetInlineKeybordInTwoColumns(IEnumerable<string> keys)
     {
         var inlineButtons = keys.Select(key => InlineKeyboardButton.WithCallbackData(key)).ToArray();
@@ -333,6 +338,7 @@ public class MessageService : IMessageService
             ResizeKeyboard = true
         };
     }
+    
     private ReplyKeyboardMarkup CreateReplyKeyboardMarkup(params string[] nameButtons)
     {
         List<KeyboardButton> buttons = new List<KeyboardButton>();
@@ -347,6 +353,7 @@ public class MessageService : IMessageService
 
         return replyButtons;
     }
+    
     private InlineKeyboardMarkup CreateInlineKeyboardMarkup(Dictionary<string, string> inlineButtons)
     {
         List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
@@ -354,9 +361,10 @@ public class MessageService : IMessageService
         {
             buttons.Add(InlineKeyboardButton.WithCallbackData(text: inlineButton.Key, callbackData: inlineButton.Value));
         }
-
+        
         return new InlineKeyboardMarkup(buttons);
     }
+    
     private InlineKeyboardMarkup SetInlineKeyboardInColumn(List<InlineKeyboardButton> inlineButtons)
     {
         var inlineButtonsColumn = new List<InlineKeyboardButton[]>();
