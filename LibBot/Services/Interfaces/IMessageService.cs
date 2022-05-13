@@ -14,7 +14,7 @@ public interface IMessageService
     Task<Message> AskToEnterAuthCodeAsync(Message message);
     Task<Message> SendWelcomeMessageAsync(long chatId);
     Task<Message> AksToEnterSearchQueryAsync(Message message);
-    Task<Message> SayThisBookIsAlreadyBorrowAsync(Message message);
+    Task AnswerCallbackQueryAsync(string callbackQueryId, string message);
     Task CreateYesAndNoButtonsAsync(CallbackQuery callbackQuery, string message);
     List<InlineKeyboardButton> CreateBookButtonsAsync(List<BookDataResponse> books, bool firstPage);
     Task<Message> DisplayBookButtons(long chatId, string messageText, List<BookDataResponse> books, ChatState chatState);
