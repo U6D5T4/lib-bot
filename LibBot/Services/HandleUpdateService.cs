@@ -411,10 +411,11 @@ public class HandleUpdateService : IHandleUpdateService
                     if (!dataAboutBook.IsBorrowedBook)
                         {
                             await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, borrowBook);
-                        }
+                            await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, $"The book {dataAboutBook.Title} was successfully borrowed!");
+                    }
                     else
                         {
-                            await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Something went wrong. This book is already borrowed.");
+                            await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, $"Something went wrong. The book {dataAboutBook.Title} is already borrowed.");
                         }
 
                     allBooksAfterYes = await UpdateBooksLibrary(callbackQuery, data);
@@ -430,10 +431,11 @@ public class HandleUpdateService : IHandleUpdateService
                     if (dataAboutBook.IsBorrowedBook)
                     {
                         await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, returnBook);
+                        await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, $"The book {dataAboutBook.Title} was successfully returned!");
                     }
                     else
                     {
-                        await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Something went wrong. This book was not borrowed.");
+                        await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, $"Something went wrong. The book {dataAboutBook.Title} is already returned.");
                     }
 
                     var userBooksAfterYes = await UpdateBooksLibrary(callbackQuery, data);
@@ -458,10 +460,11 @@ public class HandleUpdateService : IHandleUpdateService
                     if (!dataAboutBook.IsBorrowedBook)
                     {
                         await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, borrowBook);
+                        await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, $"The book {dataAboutBook.Title} was successfully borrowed!");
                     }
                     else
                     {
-                        await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Something went wrong. This book is already borrowed.");
+                        await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, $"Something went wrong. The book {dataAboutBook.Title} is already borrowed.");
                     }
 
                     var searchBooksAfterYes = await UpdateBooksLibrary(callbackQuery, data);

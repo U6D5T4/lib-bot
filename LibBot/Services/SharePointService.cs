@@ -87,7 +87,7 @@ public class SharePointService : ISharePointService
         var data = new BookChangeStatusResponse();
         var client = _clientFactory.CreateClient("SharePoint");
 
-        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Id,BookReaderId,TakenToRead&$filter=Id eq {bookId}");
+        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Id,BookReaderId,TakenToRead,Title&$filter=Id eq {bookId}");
 
         var contentsString = await httpResponse.Content.ReadAsStringAsync();
         var dataBooks = Book.FromJson(contentsString);
@@ -96,6 +96,7 @@ public class SharePointService : ISharePointService
 
          data.IsBorrowedBook = result[0].BookReaderId is not null;
          data.TakenToRead = result[0].TakenToRead;
+         data.Title = result[0].Title;
 
          return data;
     }
