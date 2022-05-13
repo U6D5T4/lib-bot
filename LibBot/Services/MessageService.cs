@@ -267,6 +267,12 @@ public class MessageService : IMessageService
         await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: replyMarkup);
     }
 
+
+    public async Task DeleteMessageAsync(long chatId, int messageId)
+    {
+        await _botClient.DeleteMessageAsync(chatId, messageId);
+    }
+
     private InlineKeyboardMarkup GetInlineKeybordInTwoColumns(IEnumerable<string> keys)
     {
         var inlineButtons = keys.Select(key => InlineKeyboardButton.WithCallbackData(key)).ToArray();
