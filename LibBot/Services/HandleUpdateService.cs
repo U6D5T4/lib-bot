@@ -16,6 +16,8 @@ namespace LibBot.Services;
 
 public class HandleUpdateService : IHandleUpdateService
 {
+    private static readonly NLog.Logger _logger;
+    static HandleUpdateService() => _logger = NLog.LogManager.GetCurrentClassLogger();
 
     private readonly IMessageService _messageService;
     private readonly IUserService _userService;
@@ -197,6 +199,7 @@ public class HandleUpdateService : IHandleUpdateService
                 break;
 
             case "about":
+
                 await _messageService.SendTextMessageAsync(message.Chat.Id, $"@U6LibBot_bot, v{GetBotVersion()}");
                 break;
 
@@ -229,12 +232,11 @@ public class HandleUpdateService : IHandleUpdateService
                 }
                 else if (user.MenuState == MenuState.SearchBooks)
                 {
-                    var chatInfo = new ChatDbModel(message.Chat.Id, message.MessageId + 2, ChatState.SearchBooks)
+                    var chatInfo = new ChatDbModel(message.Chat.Id, message.MessageId + 1, ChatState.SearchBooks)
                     {
                         SearchQuery = message.Text.Trim()
                     };
                     await _chatService.SaveChatInfoAsync(chatInfo);
-                    await HandleCancelOptionAsync(user);
                     var searchBooks = await GetBookDataResponses(chatInfo.PageNumber, chatInfo);
                     if (searchBooks.Count != 0)
                         await _messageService.DisplayBookButtons(chatInfo.ChatId, "This is the result of your search query", searchBooks, chatInfo.ChatState);
@@ -386,6 +388,7 @@ public class HandleUpdateService : IHandleUpdateService
                     else
                     {
                         await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, $"Something went wrong. The book {dataAboutBook.Title} is already borrowed.");
+                        _logger.Warn("User tried to borrow the book, that had already been borrowed");
                     }
 
 
@@ -407,6 +410,7 @@ public class HandleUpdateService : IHandleUpdateService
                     else
                     {
                         await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, $"Something went wrong. The book '{dataAboutBook.Title}' is already returned.");
+                        _logger.Warn("User tried to borrow the book, that had already been returned");
                     }
 
                     var userBooksAfterYes = await UpdateBooksLibrary(callbackQuery, data);
@@ -466,6 +470,7 @@ public class HandleUpdateService : IHandleUpdateService
             _ => exception.ToString()
         };
 
+        _logger.Error(exception, ErrorMessage);
         return Task.CompletedTask;
     }
 

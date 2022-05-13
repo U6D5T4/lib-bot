@@ -12,9 +12,12 @@ namespace LibBot.Services;
 
 public class SharePointService : ISharePointService
 {
+    private static readonly NLog.Logger _logger;
+    static SharePointService() => _logger = NLog.LogManager.GetCurrentClassLogger();
+
     private readonly IHttpClientFactory _clientFactory;
     private readonly IFileService _fileService;
-    
+
     private static List<BookDataResponse> Books { get; set; }
     private static DateTime? LastDateUpdate { get; set; }
 
@@ -38,7 +41,7 @@ public class SharePointService : ISharePointService
     public async Task UpdateBooksData()
     {
         Books = await GetAllBooksFromSharePointAsync();
-        LastDateUpdate= DateTime.UtcNow;
+        LastDateUpdate = DateTime.UtcNow;
     }
 
     public static int AmountBooks { get; } = 8;
@@ -56,6 +59,7 @@ public class SharePointService : ISharePointService
         var httpResponse = await client.GetAsync($"_api/web/siteusers?$filter=Email eq '{login}'&$select=Email");
         if (!httpResponse.IsSuccessStatusCode)
         {
+            _logger.Warn($"SharePoint returned {httpResponse.StatusCode} when was trying to get user data by user email");
             return false;
         }
 
@@ -107,11 +111,11 @@ public class SharePointService : ISharePointService
 
         var result = Book.GetBookDataResponse(dataBooks);
 
-         data.IsBorrowedBook = result[0].BookReaderId is not null;
-         data.TakenToRead = result[0].TakenToRead;
-         data.Title = result[0].Title;
+        data.IsBorrowedBook = result[0].BookReaderId is not null;
+        data.TakenToRead = result[0].TakenToRead;
+        data.Title = result[0].Title;
 
-         return data;
+        return data;
     }
     public async Task<List<BookDataResponse>> GetBooksAsync(int pageNumber)
     {
@@ -142,7 +146,19 @@ public class SharePointService : ISharePointService
         return filteredBooks.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
     }
 
-    public async Task<string[]> GetBookPathsAsync() => await _fileService.GetBookPathsFromFileAsync("bookPaths.txt");
+    public async Task<string[]> GetBookPathsAsync()
+    {
+        var filename = "bookPaths.txt";
+        try
+        {
+            return await _fileService.GetBookPathsFromFileAsync(filename);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, $"Error occured when was trying to load book paths from file with filename: {filename}");
+            return Array.Empty<string>();
+        }
+    }
 
     public async Task<bool> ChangeBookStatus(long chatId, int bookId, ChangeBookStatusRequest bookBorrowRequest)
     {
