@@ -43,7 +43,7 @@ public class MessageService : IMessageService
     {
         var replyKeyboard = CreateReplyKeyboardMarkup("Cancel");
         return await _botClient.SendTextMessageAsync(message.Chat.Id,
-            "Please, enter book's name or author's name.", replyMarkup: replyKeyboard);
+            "Please, enter book's name", replyMarkup: replyKeyboard);
     }
 
     public async Task<Message> SayThisBookIsAlreadyBorrowAsync(Message message)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -14,18 +14,31 @@ public class SharePointService : ISharePointService
 {
     private readonly IHttpClientFactory _clientFactory;
     private readonly IFileService _fileService;
-
-    private static List<BookDataResponse> books;
+    
+    private static List<BookDataResponse> Books { get; set; }
+    private static DateTime? LastDateUpdate { get; set; }
 
     public async Task<List<BookDataResponse>> GetBooksData()
     {
-        return books is null ? await GetAllBooksFromSharePointAsync() : books; 
-    }
+        if (Books is null || !LastDateUpdate.HasValue)
+        {
+            Books = await GetAllBooksFromSharePointAsync();
+            LastDateUpdate = DateTime.UtcNow;
+            return Books;
+        }
 
-    public async Task<List<BookDataResponse>> UpdateBooksData()
+        if (LastDateUpdate.Value.AddHours(2).ToUniversalTime() <= DateTime.UtcNow)
+        {
+            Books = await GetAllBooksFromSharePointAsync();
+            LastDateUpdate = DateTime.UtcNow;
+        }
+
+        return Books;
+    }
+    public async Task UpdateBooksData()
     {
-        books = await GetAllBooksFromSharePointAsync();
-        return books;
+        Books = await GetAllBooksFromSharePointAsync();
+        LastDateUpdate= DateTime.UtcNow;
     }
 
     public static int AmountBooks { get; } = 8;
@@ -87,7 +100,7 @@ public class SharePointService : ISharePointService
         var data = new BookChangeStatusResponse();
         var client = _clientFactory.CreateClient("SharePoint");
 
-        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Id,BookReaderId,TakenToRead&$filter=Id eq {bookId}");
+        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Id,BookReaderId,TakenToRead,Title&$filter=Id eq {bookId}");
 
         var contentsString = await httpResponse.Content.ReadAsStringAsync();
         var dataBooks = Book.FromJson(contentsString);
@@ -96,6 +109,7 @@ public class SharePointService : ISharePointService
 
          data.IsBorrowedBook = result[0].BookReaderId is not null;
          data.TakenToRead = result[0].TakenToRead;
+         data.Title = result[0].Title;
 
          return data;
     }

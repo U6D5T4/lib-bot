@@ -8,14 +8,14 @@ using LibBot.Models;
 
 namespace LibBot.Schedular;
 
-class NotificationSchedular : IHostedService
+class JobsSchedular : IHostedService
 {
     public IScheduler Scheduler { get; set; }
     private readonly IJobFactory jobFactory;
     private readonly List<JobMetadata> jobMetadatas;
     private readonly ISchedulerFactory schedulerFactory;
 
-    public NotificationSchedular(ISchedulerFactory schedulerFactory, List<JobMetadata> jobMetadatas, IJobFactory jobFactory)
+    public JobsSchedular(ISchedulerFactory schedulerFactory, List<JobMetadata> jobMetadatas, IJobFactory jobFactory)
     {
         this.jobFactory = jobFactory;
         this.schedulerFactory = schedulerFactory;
