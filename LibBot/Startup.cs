@@ -71,10 +71,11 @@ public class Startup
         List<JobMetadata> jobMetadatas = new List<JobMetadata>();
         jobMetadatas.Add(new JobMetadata(Guid.NewGuid(), typeof(NotificationJob), "Notify Job", "0 0 12 * * ?"));
 
+
         services.AddSingleton(jobMetadatas);
         #endregion
 
-        services.AddHostedService<NotificationSchedular>();
+        services.AddHostedService<JobsSchedular>();
 
         services.AddControllers().AddNewtonsoftJson();
     }
