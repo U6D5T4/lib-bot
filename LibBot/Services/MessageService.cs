@@ -41,8 +41,9 @@ public class MessageService : IMessageService
 
     public async Task<Message> AksToEnterSearchQueryAsync(Message message)
     {
+        var replyKeyboard = CreateReplyKeyboardMarkup("Cancel");
         return await _botClient.SendTextMessageAsync(message.Chat.Id,
-            "Please, enter book's name.");
+            "Please, enter book's name", replyMarkup: replyKeyboard);
     }
 
     public async Task<Message> SayThisBookIsAlreadyBorrowAsync(Message message)
