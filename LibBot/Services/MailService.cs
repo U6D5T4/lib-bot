@@ -11,6 +11,9 @@ namespace LibBot.Services;
 
 public class MailService : IMailService
 {
+    private static readonly NLog.Logger _logger;
+    static MailService() => _logger = NLog.LogManager.GetCurrentClassLogger();
+
     private readonly EmailConfiguration _emailConfiguration;
     private readonly BotCredentialsConfiguration _botCredentialsConfiguration;
 
@@ -56,12 +59,20 @@ public class MailService : IMailService
 
     private async Task SendEmailAsync(MimeMessage message)
     {
-        using (var client = new SmtpClient())
+        try
         {
-            await client.ConnectAsync(_emailConfiguration.Host, _emailConfiguration.Port, SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync(_botCredentialsConfiguration.Login, _botCredentialsConfiguration.Password);
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
+            using (var client = new SmtpClient())
+            {
+                await client.ConnectAsync(_emailConfiguration.Host, _emailConfiguration.Port, SecureSocketOptions.StartTls);
+                await client.AuthenticateAsync(_botCredentialsConfiguration.Login, _botCredentialsConfiguration.Password);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error occurred when was trying to send an email");
+            throw;
         }
     }
 }

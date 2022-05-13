@@ -11,6 +11,9 @@ namespace LibBot.Services;
 
 public class UserService : IUserService
 {
+    private static readonly NLog.Logger _logger;
+    static UserService() => _logger = NLog.LogManager.GetCurrentClassLogger();
+
     private readonly string _domainName;
     private readonly ISharePointService _sharePointService;
     private readonly IMailService _mailService;
@@ -71,9 +74,9 @@ public class UserService : IUserService
             var user = await GetUserByChatIdAsync(chatId);
             await _mailService.SendAuthenticationCodeAsync(user.Email, username, authToken);
         }
-        catch (Exception e)
+        catch(Exception ex)
         {
-            Console.WriteLine(e.Message);
+            _logger.Error(ex, "Error occurred when was trying to send auth code on email");
             throw;
         }
     }
@@ -152,6 +155,15 @@ public class UserService : IUserService
 
     public async Task SendFeedbackAsync(string feedback)
     {
-        await _mailService.SendFeedbackAsync(feedback);
+        try
+        {
+            await _mailService.SendFeedbackAsync(feedback);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, $"Error occurred when was trying to send feedback.{Environment.NewLine}Feedback:{feedback}");
+            throw;
+        }
+        
     }
 }

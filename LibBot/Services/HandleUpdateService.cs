@@ -16,7 +16,9 @@ namespace LibBot.Services;
 
 public class HandleUpdateService : IHandleUpdateService
 {
- 
+    private static readonly NLog.Logger _logger;
+    static HandleUpdateService() => _logger = NLog.LogManager.GetCurrentClassLogger();
+
     private readonly IMessageService _messageService;
     private readonly IUserService _userService;
     private readonly ISharePointService _sharePointService;
@@ -196,7 +198,7 @@ public class HandleUpdateService : IHandleUpdateService
                 break;
 
             case "about":
-                
+
                 await _messageService.SendTextMessageAsync(message.Chat.Id, $"@U6LibBot_bot, v{GetBotVersion()}");
                 break;
 
@@ -223,8 +225,8 @@ public class HandleUpdateService : IHandleUpdateService
                                    $"BotVersion: v{GetBotVersion()}{Environment.NewLine}" +
                                    $"ChatId: {message.Chat.Id}{Environment.NewLine}" +
                                    $"Message: {message.Text}";
-                    
-                     await _userService.SendFeedbackAsync(feedback);
+
+                    await _userService.SendFeedbackAsync(feedback);
                     return;
                 }
 
@@ -259,7 +261,7 @@ public class HandleUpdateService : IHandleUpdateService
         }
 
         var allBooks = await GetBookDataResponses(data.PageNumber, data);
-        await _messageService.DisplayBookButtons(data.ChatId, $"These books are in our library.{Environment.NewLine}" 
+        await _messageService.DisplayBookButtons(data.ChatId, $"These books are in our library.{Environment.NewLine}"
             + GetFiltersAsAStringMessage(data.Filters), allBooks, data.ChatState);
         var chatInfoAllBooks = new ChatDbModel(message.Chat.Id, message.MessageId + 1, ChatState.AllBooks)
         {
@@ -315,7 +317,7 @@ public class HandleUpdateService : IHandleUpdateService
         data = data is null ? await _chatService.GetChatInfoAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId - 3) : data;
 
         bool firstPage = data.PageNumber == 0;
-        
+
         switch (callbackQuery.Data.ToLower())
         {
             case "show all books":
@@ -409,14 +411,15 @@ public class HandleUpdateService : IHandleUpdateService
                     List<BookDataResponse> allBooksAfterYes;
                     var dataAboutBook = await _sharePointService.GetDataAboutBookAsync(data.BookId);
                     if (!dataAboutBook.IsBorrowedBook)
-                        {
-                            await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, borrowBook);
-                            await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, $"The book {dataAboutBook.Title} was successfully borrowed!");
+                    {
+                        await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, borrowBook);
+                        await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, $"The book {dataAboutBook.Title} was successfully borrowed!");
                     }
                     else
-                        {
-                            await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, $"Something went wrong. The book {dataAboutBook.Title} is already borrowed.");
-                        }
+                    {
+                        await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, $"Something went wrong. The book {dataAboutBook.Title} is already borrowed.");
+                        _logger.Warn("User tried to borrow the book, that had already been borrowed");
+                    }
 
                     allBooksAfterYes = await UpdateBooksLibrary(callbackQuery, data);
                     await _messageService.EditMessageAfterYesAndNoButtonsAsync(callbackQuery, $"These books are in our library.{Environment.NewLine}" + GetFiltersAsAStringMessage(data.Filters));
@@ -436,6 +439,7 @@ public class HandleUpdateService : IHandleUpdateService
                     else
                     {
                         await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, $"Something went wrong. The book {dataAboutBook.Title} is already returned.");
+                        _logger.Warn("User tried to borrow the book, that had already been returned");
                     }
 
                     var userBooksAfterYes = await UpdateBooksLibrary(callbackQuery, data);
@@ -465,6 +469,7 @@ public class HandleUpdateService : IHandleUpdateService
                     else
                     {
                         await _messageService.SendTextMessageAsync(callbackQuery.Message.Chat.Id, $"Something went wrong. The book {dataAboutBook.Title} is already borrowed.");
+                        _logger.Warn("User tried to borrow the book, that had already been borrowed");
                     }
 
                     var searchBooksAfterYes = await UpdateBooksLibrary(callbackQuery, data);
@@ -510,8 +515,8 @@ public class HandleUpdateService : IHandleUpdateService
                 }
 
                 break;
-                
-              case "tilldata":
+
+            case "tilldata":
                 break;
         }
     }
@@ -524,6 +529,7 @@ public class HandleUpdateService : IHandleUpdateService
             _ => exception.ToString()
         };
 
+        _logger.Error(exception, ErrorMessage);
         return Task.CompletedTask;
     }
 
