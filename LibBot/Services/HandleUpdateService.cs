@@ -232,12 +232,11 @@ public class HandleUpdateService : IHandleUpdateService
                 }
                 else if (user.MenuState == MenuState.SearchBooks)
                 {
-                    var chatInfo = new ChatDbModel(message.Chat.Id, message.MessageId + 2, ChatState.SearchBooks)
+                    var chatInfo = new ChatDbModel(message.Chat.Id, message.MessageId + 1, ChatState.SearchBooks)
                     {
                         SearchQuery = message.Text.Trim()
                     };
                     await _chatService.SaveChatInfoAsync(chatInfo);
-                    await HandleCancelOptionAsync(user);
                     var searchBooks = await GetBookDataResponses(chatInfo.PageNumber, chatInfo);
                     if (searchBooks.Count != 0)
                         await _messageService.DisplayBookButtons(chatInfo.ChatId, "This is the result of your search query", searchBooks, chatInfo.ChatState);
