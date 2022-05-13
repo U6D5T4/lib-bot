@@ -317,7 +317,12 @@ public class HandleUpdateService : IHandleUpdateService
     {
         var data = await _chatService.GetChatInfoAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId);
 
-        data = data is null ? await _chatService.GetChatInfoAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId - 3) : data;
+        if (data is null)
+        {
+            await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, "Sorry, we lost this message");
+            await _messageService.DeleteMessageAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId);
+            return;
+        }
 
         bool firstPage = data.PageNumber == 0;
 
@@ -426,7 +431,7 @@ public class HandleUpdateService : IHandleUpdateService
                         await UpdateInlineButtonsAsync(callbackQuery, books, true, data.ChatState);
                     }
                 }
-                
+
                 break;
 
 
