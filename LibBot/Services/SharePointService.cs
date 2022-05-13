@@ -10,21 +10,44 @@ using Newtonsoft.Json;
 
 namespace LibBot.Services;
 
-public class SharePointService : BooksStorage, ISharePointService
+public class SharePointService : ISharePointService
 {
     private readonly IHttpClientFactory _clientFactory;
     private readonly IFileService _fileService;
     
-    private static List<BookDataResponse> books;
+    private static List<BookDataResponse> Books { get; set; }
+    private static DateTime? LastDateUpdate { get; set; }
 
     public async Task<List<BookDataResponse>> GetBooksData()
     {
-        return Books is null ? await GetAllBooksFromSharePointAsync() : Books; 
-    }
+        if (LastDateUpdate.HasValue)
+        {
+            if (LastDateUpdate.Value.AddHours(2).ToUniversalTime() >= DateTime.UtcNow)
+            {
+                if (Books is null)
+                {
+                    Books = await GetAllBooksFromSharePointAsync();
+                    LastDateUpdate = DateTime.UtcNow;
+                }
+            }
+            else
+            {
+                Books = await GetAllBooksFromSharePointAsync();
+                LastDateUpdate = DateTime.UtcNow;
+            }
+        }
+        else
+        {
+            Books = await GetAllBooksFromSharePointAsync();
+            LastDateUpdate = DateTime.UtcNow;
+        }
 
-    public async Task<List<BookDataResponse>> UpdateBooksData()
+        return Books;
+    }
+    public async Task UpdateBooksData()
     {
         Books = await GetAllBooksFromSharePointAsync();
+        LastDateUpdate= DateTime.UtcNow;
     }
 
     public static int AmountBooks { get; } = 8;
