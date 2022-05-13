@@ -388,6 +388,7 @@ public class HandleUpdateService : IHandleUpdateService
                     else
                     {
                         await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, $"Something went wrong. The book {dataAboutBook.Title} is already borrowed.");
+                        _logger.Warn("User tried to borrow the book, that had already been borrowed");
                     }
 
 
@@ -409,6 +410,7 @@ public class HandleUpdateService : IHandleUpdateService
                     else
                     {
                         await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, $"Something went wrong. The book '{dataAboutBook.Title}' is already returned.");
+                        _logger.Warn("User tried to borrow the book, that had already been returned");
                     }
 
                     var userBooksAfterYes = await UpdateBooksLibrary(callbackQuery, data);
