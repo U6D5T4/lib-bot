@@ -44,17 +44,30 @@ public class HandleUpdateService : IHandleUpdateService
                         return;
                     }
                     await BotOnMessageReceived(update.Message!);
+                    await RemoveOldMessagesAsync(update.Message.Chat.Id);
                     break;
                 case UpdateType.CallbackQuery:
                     await BotOnCallbackQueryReceived(update.CallbackQuery!);
+                    await RemoveOldMessagesAsync(update.CallbackQuery.Message.Chat.Id);
                     break;
                 default:
                     break;
             };
+
         }
         catch (Exception exception)
         {
             await HandleErrorAsync(exception);
+        }
+    }
+
+    private async Task RemoveOldMessagesAsync(long chatId)
+    {
+        var userChats = await _chatService.GetUserChatsInfoAsync(chatId);
+        foreach (var chat in userChats.SkipLast(1))
+        {
+            await _messageService.DeleteMessageAsync(chat.ChatId, chat.MessageId);
+            await _chatService.DeleteChatInfoAsync(chat.ChatId, chat.MessageId);
         }
     }
 
@@ -248,8 +261,6 @@ public class HandleUpdateService : IHandleUpdateService
                     await _messageService.SendWelcomeMessageAsync(message.Chat.Id);
                 break;
         }
-
-        await _userService.UpdateUserAsync(user);
     }
 
     private async Task HandleShowFilteredOptionAsync(Message message)
@@ -314,7 +325,7 @@ public class HandleUpdateService : IHandleUpdateService
 
         await _userService.UpdateUserAsync(user);
     }
-    
+
     private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery)
     {
         var data = await _chatService.GetChatInfoAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId);
@@ -327,7 +338,7 @@ public class HandleUpdateService : IHandleUpdateService
         }
 
         bool firstPage = data.PageNumber == 0;
-        
+
         switch (callbackQuery.Data.ToLower())
         {
             case "show all books":
@@ -433,7 +444,7 @@ public class HandleUpdateService : IHandleUpdateService
                         await UpdateInlineButtonsAsync(callbackQuery, books, true, data.ChatState);
                     }
                 }
-                
+
                 break;
 
 

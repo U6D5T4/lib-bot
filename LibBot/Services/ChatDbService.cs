@@ -1,6 +1,8 @@
 ﻿using FireSharp.Interfaces;
 using LibBot.Models;
 using LibBot.Services.Interfaces;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace LibBot.Services;
@@ -37,5 +39,20 @@ public class ChatDbService: IChatDbService
     public async Task DeleteItemAsync(long chatId, long inlineMessageId)
     {
         await _client.DeleteAsync(_dbName + chatId + '/' + inlineMessageId);
+    }
+
+    public async Task<IEnumerable<ChatDbModel>> ReadUserItemsAsync(long chatId)
+    {
+        var result = await _client.GetAsync($"{_dbName}/{chatId}");
+        var data = JsonConvert.DeserializeObject<Dictionary<string, ChatDbModel>>(result.Body.ToString());
+
+        List<ChatDbModel> users = new List<ChatDbModel>();
+        foreach (var key in data.Keys)
+        {
+            var value = data[key];
+            users.Add(value);
+        }
+
+        return users;
     }
 }

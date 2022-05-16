@@ -1,5 +1,6 @@
 ﻿using LibBot.Models;
 using LibBot.Services.Interfaces;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace LibBot.Services;
@@ -25,6 +26,11 @@ public class ChatService : IChatService
     public async Task<ChatDbModel> GetChatInfoAsync(long chatId, int inlineMessageId)
     {
        return await _chatDbService.ReadItemAsync(chatId, inlineMessageId);
+    }
+
+    public async Task<IEnumerable<ChatDbModel>> GetUserChatsInfoAsync(long chatId)
+    {
+        return await _chatDbService.ReadUserItemsAsync(chatId);
     }
 
     public async Task DeleteChatInfoAsync(long chatId, int inlineMessageId)
