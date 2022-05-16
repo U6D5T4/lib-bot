@@ -19,23 +19,23 @@ public class ChatDbService: IChatDbService
 
     public async Task CreateItemAsync(ChatDbModel item)
     {
-        await _client.SetAsync(_dbName + item.ChatId + '/' + item.MessageId, item);
+        await _client.SetAsync(_dbName + item.ChatId, item);
     }
 
-    public async Task<ChatDbModel> ReadItemAsync(long chatId, long inlineMessageId)
+    public async Task<ChatDbModel> ReadItemAsync(long chatId)
     {
-        var result = await _client.GetAsync(_dbName + chatId + '/' + inlineMessageId);
+        var result = await _client.GetAsync(_dbName + chatId);
         var data = result.ResultAs<ChatDbModel>();
         return data;
     }
 
     public async Task UpdateItemAsync(ChatDbModel item) 
     {
-        await _client.UpdateAsync(_dbName + item.ChatId + '/' + item.MessageId, item);
+        await _client.UpdateAsync(_dbName + item.ChatId, item);
     }
 
-    public async Task DeleteItemAsync(long chatId, long inlineMessageId)
+    public async Task DeleteItemAsync(long chatId)
     {
-        await _client.DeleteAsync(_dbName + chatId + '/' + inlineMessageId);
+        await _client.DeleteAsync(_dbName + chatId);
     }
 }

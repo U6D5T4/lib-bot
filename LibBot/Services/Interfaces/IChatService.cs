@@ -1,12 +1,13 @@
 ﻿using LibBot.Models;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace LibBot.Services.Interfaces;
 
 public interface IChatService
 {
-    public Task SaveChatInfoAsync(ChatDbModel chatDbModel);
-    public Task UpdateChatInfoAsync(ChatDbModel chatDbModel);
-    public Task<ChatDbModel> GetChatInfoAsync(long chatId, int inlineMessageId);
-    public Task DeleteChatInfoAsync(long chatId, int inlineMessageId);
+    Task SaveChatInfoAsync(ChatDbModel chatDbModel);
+    Task UpdateChatInfoAsync(ChatDbModel chatDbModel);
+    Task<ChatDbModel> GetChatInfoAsync(long chatId);
+    Task DeleteChatInfoAsync(long chatId);
 }
