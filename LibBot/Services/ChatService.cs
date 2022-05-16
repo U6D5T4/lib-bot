@@ -23,18 +23,13 @@ public class ChatService : IChatService
        await _chatDbService.UpdateItemAsync(chatDbModel);
     }
 
-    public async Task<ChatDbModel> GetChatInfoAsync(long chatId, int inlineMessageId)
+    public async Task<ChatDbModel> GetChatInfoAsync(long chatId)
     {
-       return await _chatDbService.ReadItemAsync(chatId, inlineMessageId);
+       return await _chatDbService.ReadItemAsync(chatId);
     }
 
-    public async Task<IEnumerable<ChatDbModel>> GetUserChatsInfoAsync(long chatId)
+    public async Task DeleteChatInfoAsync(long chatId)
     {
-        return await _chatDbService.ReadUserItemsAsync(chatId);
-    }
-
-    public async Task DeleteChatInfoAsync(long chatId, int inlineMessageId)
-    {
-         await _chatDbService.DeleteItemAsync(chatId, inlineMessageId);
+         await _chatDbService.DeleteItemAsync(chatId);
     }
 }

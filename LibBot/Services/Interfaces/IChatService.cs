@@ -8,7 +8,6 @@ public interface IChatService
 {
     Task SaveChatInfoAsync(ChatDbModel chatDbModel);
     Task UpdateChatInfoAsync(ChatDbModel chatDbModel);
-    Task<ChatDbModel> GetChatInfoAsync(long chatId, int inlineMessageId);
-    Task DeleteChatInfoAsync(long chatId, int inlineMessageId);
-    Task<IEnumerable<ChatDbModel>> GetUserChatsInfoAsync(long chatId);
+    Task<ChatDbModel> GetChatInfoAsync(long chatId);
+    Task DeleteChatInfoAsync(long chatId);
 }

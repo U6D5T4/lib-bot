@@ -44,11 +44,9 @@ public class HandleUpdateService : IHandleUpdateService
                         return;
                     }
                     await BotOnMessageReceived(update.Message!);
-                    await RemoveOldMessagesAsync(update.Message.Chat.Id);
                     break;
                 case UpdateType.CallbackQuery:
                     await BotOnCallbackQueryReceived(update.CallbackQuery!);
-                    await RemoveOldMessagesAsync(update.CallbackQuery.Message.Chat.Id);
                     break;
                 default:
                     break;
@@ -58,26 +56,6 @@ public class HandleUpdateService : IHandleUpdateService
         catch (Exception exception)
         {
             await HandleErrorAsync(exception);
-        }
-    }
-
-    private async Task RemoveOldMessagesAsync(long chatId)
-    {
-        var userChats = await _chatService.GetUserChatsInfoAsync(chatId);
-        foreach (var chat in userChats.SkipLast(1))
-        {
-            try
-            {
-                await _messageService.DeleteMessageAsync(chat.ChatId, chat.MessageId);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Bot tried delete message, that had sent more than 24 hours ago");
-            }
-            finally
-            {
-                await _chatService.DeleteChatInfoAsync(chat.ChatId, chat.MessageId);
-            }
         }
     }
 
@@ -184,6 +162,7 @@ public class HandleUpdateService : IHandleUpdateService
                 break;
 
             case "show all books":
+                await DeletePreviousMessageAsync(message.Chat.Id);
                 var chatInfoAllBooks = new ChatDbModel(message.Chat.Id, message.MessageId + 1, ChatState.AllBooks);
                 var allBooks = await GetBookDataResponses(chatInfoAllBooks.PageNumber, chatInfoAllBooks);
                 await _messageService.DisplayBookButtons(chatInfoAllBooks.ChatId,
@@ -197,6 +176,7 @@ public class HandleUpdateService : IHandleUpdateService
                 var myBooks = await _sharePointService.GetBooksAsync(chatInfoUserBooks.PageNumber, user.SharePointId);
                 if (myBooks.Count != 0)
                 {
+                    await DeletePreviousMessageAsync(message.Chat.Id);
                     await _messageService.CreateUserBookButtonsAsync(chatInfoUserBooks.ChatId, myBooks);
                 }
                 else
@@ -204,6 +184,7 @@ public class HandleUpdateService : IHandleUpdateService
                     chatInfoUserBooks.PageNumber = 0;
                     await _messageService.DisplayBookButtons(chatInfoUserBooks.ChatId, "You don't read any books now", myBooks, chatInfoUserBooks.ChatState);
                 }
+
                 await _chatService.SaveChatInfoAsync(chatInfoUserBooks);
                 break;
 
@@ -222,7 +203,6 @@ public class HandleUpdateService : IHandleUpdateService
                 break;
 
             case "about":
-
                 await _messageService.SendTextMessageAsync(message.Chat.Id, $"@U6LibBot_bot, v{GetBotVersion()}");
                 break;
 
@@ -255,6 +235,7 @@ public class HandleUpdateService : IHandleUpdateService
                 }
                 else if (user.MenuState == MenuState.SearchBooks)
                 {
+                    await DeletePreviousMessageAsync(message.Chat.Id);
                     var chatInfo = new ChatDbModel(message.Chat.Id, message.MessageId + 1, ChatState.SearchBooks)
                     {
                         SearchQuery = message.Text.Trim()
@@ -275,9 +256,8 @@ public class HandleUpdateService : IHandleUpdateService
 
     private async Task HandleShowFilteredOptionAsync(Message message)
     {
-        var previousBotMessageId = message.MessageId - 1;
-        ChatDbModel data = await _chatService.GetChatInfoAsync(message.Chat.Id, previousBotMessageId);
-
+        await DeletePreviousMessageAsync(message.Chat.Id);
+        ChatDbModel data = await _chatService.GetChatInfoAsync(message.Chat.Id);
         if (data is null || data.ChatState != ChatState.Filters)
         {
             await _messageService.SendTextMessageAsync(message.Chat.Id, "Sorry, we can't find message with filters");
@@ -299,6 +279,7 @@ public class HandleUpdateService : IHandleUpdateService
 
     private async Task HandleFilterByPathOptionAsync(Message message, int messageId)
     {
+        await DeletePreviousMessageAsync(message.Chat.Id);
         var chatInfoFilteredBooks = new ChatDbModel(message.Chat.Id, messageId, ChatState.Filters);
         var bookPaths = await _sharePointService.GetBookPathsAsync();
         await _messageService.SendFilterBooksMessageWithInlineKeyboardAsync(chatInfoFilteredBooks.ChatId, "Choose paths for books", bookPaths);
@@ -306,6 +287,15 @@ public class HandleUpdateService : IHandleUpdateService
         var user = await _userService.GetUserByChatIdAsync(message.Chat.Id);
         user.MenuState = MenuState.FilteredBooks;
         await _userService.UpdateUserAsync(user);
+    }
+
+    private async Task DeletePreviousMessageAsync(long chatId)
+    {
+        var data = await _chatService.GetChatInfoAsync(chatId);
+        if (data is not null)
+        {
+            await _messageService.DeleteMessageAsync(chatId, data.MessageId);
+        }
     }
 
     private async Task HandleCancelOptionAsync(UserDbModel user)
@@ -338,12 +328,11 @@ public class HandleUpdateService : IHandleUpdateService
 
     private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery)
     {
-        var data = await _chatService.GetChatInfoAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId);
+        var data = await _chatService.GetChatInfoAsync(callbackQuery.Message.Chat.Id);
 
         if (data is null)
         {
             await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, "Sorry, we lost this message");
-            await _messageService.DeleteMessageAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId);
             return;
         }
 
