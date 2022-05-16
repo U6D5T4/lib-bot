@@ -223,18 +223,9 @@ public class HandleUpdateService : IHandleUpdateService
                 {
                     await _messageService.SendTextMessageAsync(message.Chat.Id, "Thanks!");
                     await HandleCancelOptionAsync(user);
-                    var feedback = new UserFeedbackDbModel
-                    {
-                        ChatId = message.Chat.Id,
-                        Date = message.Date,
-                        BotVersion = "v" + GetBotVersion(),
-                        Name = $"{message.From.FirstName} {message.From.LastName}",
-                        Username = message.From.Username,
-                        Message = message.Text
-                    };
-
+                   
+                    var feedback = new UserFeedbackDbModel(message, "v" + GetBotVersion());
                     await _feedbackService.SaveFeedbackIntoDb(feedback);
-                    return;
                 }
                 else if (user.MenuState == MenuState.SearchBooks)
                 {
