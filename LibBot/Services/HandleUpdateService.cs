@@ -312,7 +312,7 @@ public class HandleUpdateService : IHandleUpdateService
 
         await _userService.UpdateUserAsync(user);
     }
-    
+
     private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery)
     {
         var data = await _chatService.GetChatInfoAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId);
@@ -325,7 +325,7 @@ public class HandleUpdateService : IHandleUpdateService
         }
 
         bool firstPage = data.PageNumber == 0;
-        
+
         switch (callbackQuery.Data.ToLower())
         {
             case "next":
@@ -377,18 +377,9 @@ public class HandleUpdateService : IHandleUpdateService
                     ChangeBookStatusRequest borrowBook = new ChangeBookStatusRequest(user.SharePointId, user.SharePointId, DateTime.UtcNow, DateTime.UtcNow);
 
                     var dataAboutBook = await _sharePointService.GetDataAboutBookAsync(data.BookId);
-                    if (!dataAboutBook.IsBorrowedBook)
-                    {
-                        await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, borrowBook);
-                        await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, $"The book {dataAboutBook.Title} was successfully borrowed!");
-                    }
-                    else
-                    {
-                        await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, $"Something went wrong. The book {dataAboutBook.Title} is already borrowed.");
-                        _logger.Warn("User tried to borrow the book, that had already been borrowed");
-                    }
-
-
+                    await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, borrowBook);
+                    await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, $"The book {dataAboutBook.Title} was successfully borrowed!");
+                  
                     var updatedBooks = await UpdateBooksLibrary(callbackQuery, data);
                     var message = data.ChatState == ChatState.AllBooks ? $"These books are in our library.{Environment.NewLine}" + GetFiltersAsAStringMessage(data.Filters) : "This is the result of your search query";
                     await _messageService.EditMessageAfterYesAndNoButtonsAsync(callbackQuery, message);
@@ -423,16 +414,25 @@ public class HandleUpdateService : IHandleUpdateService
                         await UpdateInlineButtonsAsync(callbackQuery, books, true, data.ChatState);
                     }
                 }
-                
+
                 break;
 
 
             default:
                 if (data.ChatState == ChatState.AllBooks || data.ChatState == ChatState.SearchBooks)
                 {
-                    await _messageService.CreateYesAndNoButtonsAsync(callbackQuery, "Are you sure you want to borrow this book?");
                     data.BookId = int.Parse(callbackQuery.Data);
-                    await _chatService.UpdateChatInfoAsync(data);
+                    var dataAboutBook = await _sharePointService.GetDataAboutBookAsync(data.BookId);
+                    if (!dataAboutBook.IsBorrowedBook)
+                    {
+                        await _messageService.CreateYesAndNoButtonsAsync(callbackQuery, "Are you sure you want to borrow this book?");
+                        await _chatService.UpdateChatInfoAsync(data);
+                    }
+                    else
+                    {
+                        await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, $"The book {dataAboutBook.Title} is actually borrowed");
+                        await _sharePointService.UpdateBooksData();
+                    }
                 }
                 else if (data.ChatState == ChatState.UserBooks)
                 {
