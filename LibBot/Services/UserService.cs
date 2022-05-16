@@ -152,18 +152,4 @@ public class UserService : IUserService
     {
         return await _codeDbService.ReadItemAsync(chatId);
     }
-
-    public async Task SendFeedbackAsync(string feedback)
-    {
-        try
-        {
-            await _mailService.SendFeedbackAsync(feedback);
-        }
-        catch (Exception ex)
-        {
-            _logger.Error(ex, $"Error occurred when was trying to send feedback.{Environment.NewLine}Feedback:{feedback}");
-            throw;
-        }
-        
-    }
 }

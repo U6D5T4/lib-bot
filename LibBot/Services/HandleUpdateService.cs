@@ -23,13 +23,15 @@ public class HandleUpdateService : IHandleUpdateService
     private readonly IUserService _userService;
     private readonly ISharePointService _sharePointService;
     private readonly IChatService _chatService;
+    private readonly IFeedbackService _feedbackService;
 
-    public HandleUpdateService(IMessageService messageService, IUserService userService, ISharePointService sharePointService, IChatService chatService)
+    public HandleUpdateService(IMessageService messageService, IUserService userService, ISharePointService sharePointService, IChatService chatService, IFeedbackService feedbackService)
     {
         _messageService = messageService;
         _userService = userService;
         _sharePointService = sharePointService;
         _chatService = chatService;
+        _feedbackService = feedbackService;
     }
 
     public async Task HandleAsync(Update update)
@@ -221,14 +223,9 @@ public class HandleUpdateService : IHandleUpdateService
                 {
                     await _messageService.SendTextMessageAsync(message.Chat.Id, "Thanks!");
                     await HandleCancelOptionAsync(user);
-                    var feedback = $"Date: {message.Date}{Environment.NewLine}" +
-                                   $"From: {message.From.FirstName} {message.From.LastName}, @{message.From.Username}{Environment.NewLine}" +
-                                   $"BotVersion: v{GetBotVersion()}{Environment.NewLine}" +
-                                   $"ChatId: {message.Chat.Id}{Environment.NewLine}" +
-                                   $"Message: {message.Text}";
-
-                    await _userService.SendFeedbackAsync(feedback);
-                    return;
+                   
+                    var feedback = new UserFeedbackDbModel(message, "v" + GetBotVersion());
+                    await _feedbackService.SaveFeedbackIntoDb(feedback);
                 }
                 else if (user.MenuState == MenuState.SearchBooks)
                 {

@@ -52,6 +52,8 @@ public class Startup
         services.AddScoped<IChatDbService, ChatDbService>();
         services.AddScoped<IChatService, ChatService>();
         services.AddScoped<IFileService, FileService>();
+        services.AddScoped<IFeedbackDbService, FeedbackDbService>();
+        services.AddScoped<IFeedbackService, FeedbackService>();
 
         services.Configure<EmailConfiguration>(Configuration.GetSection("EmailConfiguration"));
         services.Configure<DbConfiguration>(Configuration.GetSection("DbConfiguration"));

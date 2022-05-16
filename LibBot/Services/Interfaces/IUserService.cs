@@ -20,5 +20,4 @@ public interface IUserService
     string ParseLogin(string login);
     Task<UserDbModel> GetUserByChatIdAsync(long chatId);
     Task UpdateUserAsync(UserDbModel user);
-    Task SendFeedbackAsync(string feedback);
 }
