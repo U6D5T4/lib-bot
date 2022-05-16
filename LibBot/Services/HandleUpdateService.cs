@@ -372,15 +372,20 @@ public class HandleUpdateService : IHandleUpdateService
 
             case "yes":
                 var user = await _userService.GetUserByChatIdAsync(callbackQuery.Message.Chat.Id);
+                Task updateUserTask = null;
                 if (data.ChatState == ChatState.AllBooks || data.ChatState == ChatState.SearchBooks)
                 {
-                    ChangeBookStatusRequest borrowBook = new ChangeBookStatusRequest(user.SharePointId, user.SharePointId, DateTime.UtcNow, DateTime.UtcNow);
+                    ChangeBookStatusRequest changeBookStatus = new ChangeBookStatusRequest(user.SharePointId, user.SharePointId, DateTime.UtcNow, DateTime.UtcNow);
 
                     var dataAboutBook = await _sharePointService.GetDataAboutBookAsync(data.BookId);
                     if (!dataAboutBook.IsBorrowedBook)
                     {
-                        await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, borrowBook);
+                        await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, changeBookStatus);
                         await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, $"The book {dataAboutBook.Title} was successfully borrowed!");
+                        var borrowedBook = new BorrowedBook(data.BookId, changeBookStatus.TakenToRead.Value);
+                        user.BorrowedBooks = user.BorrowedBooks is null ? new List<BorrowedBook>() : user.BorrowedBooks;
+                        user.BorrowedBooks.Add(borrowedBook);
+                        updateUserTask = _userService.UpdateUserAsync(user);
                     }
                     else
                     {
@@ -403,6 +408,8 @@ public class HandleUpdateService : IHandleUpdateService
                     {
                         await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, returnBook);
                         await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, $"The book {dataAboutBook.Title} was successfully returned!");
+                        user.BorrowedBooks.First(book => book.BookId == data.BookId).Returned = returnBook.Modified;
+                        updateUserTask = _userService.UpdateUserAsync(user);
                     }
                     else
                     {
@@ -423,9 +430,13 @@ public class HandleUpdateService : IHandleUpdateService
                         await UpdateInlineButtonsAsync(callbackQuery, books, true, data.ChatState);
                     }
                 }
-                
-                break;
 
+                if (updateUserTask is not null)
+                {
+                    await updateUserTask;
+                }
+
+                break;
 
             default:
                 if (data.ChatState == ChatState.AllBooks || data.ChatState == ChatState.SearchBooks)
