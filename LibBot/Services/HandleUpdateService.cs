@@ -328,14 +328,6 @@ public class HandleUpdateService : IHandleUpdateService
         
         switch (callbackQuery.Data.ToLower())
         {
-            case "show all books":
-                List<BookDataResponse> allBooks = await GetBookDataResponses(data.PageNumber, data);
-                await _messageService.UpdateBookButtonsAndMessageTextAsync(data.ChatId, data.MessageId,
-                    $"These books are in our library.{Environment.NewLine}" + GetFiltersAsAStringMessage(data.Filters), allBooks, firstPage, ChatState.AllBooks);
-                data.ChatState = ChatState.AllBooks;
-                await _chatService.UpdateChatInfoAsync(data);
-                break;
-
             case "next":
                 var books = await GetBookDataResponses(data.PageNumber + 1, data);
                 if (books.Count != 0)
@@ -450,7 +442,12 @@ public class HandleUpdateService : IHandleUpdateService
                 }
                 else if (data.ChatState == ChatState.Filters)
                 {
-                    data.Filters = data.Filters is null ? new HashSet<string>() : data.Filters;
+                    data.Filters = data.Filters is null ? new List<string>() : data.Filters;
+                    if (data.Filters.Contains(callbackQuery.Data))
+                    {
+                        return;
+                    }
+
                     data.Filters.Add(callbackQuery.Data);
                     await _chatService.UpdateChatInfoAsync(data);
                     var filters = await _sharePointService.GetBookPathsAsync();
@@ -485,7 +482,7 @@ public class HandleUpdateService : IHandleUpdateService
     {
         if (data.Filters is not null && data.Filters.Count > 0)
         {
-            return await _sharePointService.GetBooksAsync(pageNumber, data.Filters.ToList());
+            return await _sharePointService.GetBooksAsync(pageNumber, data.Filters);
         }
 
         if (!string.IsNullOrWhiteSpace(data.SearchQuery))

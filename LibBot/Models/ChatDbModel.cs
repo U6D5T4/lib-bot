@@ -10,7 +10,7 @@ public class ChatDbModel
     public int PageNumber { get; set; }
     public int BookId { get; set; }
     public string SearchQuery { get; set; }
-    public HashSet<string> Filters { get; set; }
+    public List<string> Filters { get; set; }
 
     public ChatDbModel() { }
 
