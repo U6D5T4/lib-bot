@@ -248,8 +248,6 @@ public class HandleUpdateService : IHandleUpdateService
                     await _messageService.SendWelcomeMessageAsync(message.Chat.Id);
                 break;
         }
-
-        await _userService.UpdateUserAsync(user);
     }
 
     private async Task HandleShowFilteredOptionAsync(Message message)
@@ -452,7 +450,7 @@ public class HandleUpdateService : IHandleUpdateService
                 }
                 else if (data.ChatState == ChatState.Filters)
                 {
-                    data.Filters = data.Filters is null ? new List<string>() : data.Filters;
+                    data.Filters = data.Filters is null ? new HashSet<string>() : data.Filters;
                     data.Filters.Add(callbackQuery.Data);
                     await _chatService.UpdateChatInfoAsync(data);
                     var filters = await _sharePointService.GetBookPathsAsync();
@@ -487,7 +485,7 @@ public class HandleUpdateService : IHandleUpdateService
     {
         if (data.Filters is not null && data.Filters.Count > 0)
         {
-            return await _sharePointService.GetBooksAsync(pageNumber, data.Filters);
+            return await _sharePointService.GetBooksAsync(pageNumber, data.Filters.ToList());
         }
 
         if (!string.IsNullOrWhiteSpace(data.SearchQuery))

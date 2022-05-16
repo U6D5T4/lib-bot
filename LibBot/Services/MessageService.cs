@@ -60,7 +60,7 @@ public class MessageService : IMessageService
 
     public async Task AnswerCallbackQueryAsync(string callbackQueryId, string message)
     {
-        await _botClient.AnswerCallbackQueryAsync(callbackQueryId, message);
+        await _botClient.AnswerCallbackQueryAsync(callbackQueryId, message, showAlert: true);
     }
     public async Task CreateYesAndNoButtonsAsync(CallbackQuery callbackQuery, string message)
     {
