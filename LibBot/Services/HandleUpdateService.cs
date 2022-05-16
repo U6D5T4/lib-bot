@@ -294,7 +294,14 @@ public class HandleUpdateService : IHandleUpdateService
         var data = await _chatService.GetChatInfoAsync(chatId);
         if (data is not null)
         {
-            await _messageService.DeleteMessageAsync(chatId, data.MessageId);
+            try
+            {
+                await _messageService.DeleteMessageAsync(chatId, data.MessageId);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Bot tried delete message, that had sent more than 24 hours ago");
+            }
         }
     }
 
