@@ -66,8 +66,18 @@ public class HandleUpdateService : IHandleUpdateService
         var userChats = await _chatService.GetUserChatsInfoAsync(chatId);
         foreach (var chat in userChats.SkipLast(1))
         {
-            await _messageService.DeleteMessageAsync(chat.ChatId, chat.MessageId);
-            await _chatService.DeleteChatInfoAsync(chat.ChatId, chat.MessageId);
+            try
+            {
+                await _messageService.DeleteMessageAsync(chat.ChatId, chat.MessageId);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Bot tried delete message, that had sent more than 24 hours ago");
+            }
+            finally
+            {
+                await _chatService.DeleteChatInfoAsync(chat.ChatId, chat.MessageId);
+            }
         }
     }
 
