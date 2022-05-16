@@ -248,8 +248,6 @@ public class HandleUpdateService : IHandleUpdateService
                     await _messageService.SendWelcomeMessageAsync(message.Chat.Id);
                 break;
         }
-
-        await _userService.UpdateUserAsync(user);
     }
 
     private async Task HandleShowFilteredOptionAsync(Message message)
@@ -330,14 +328,6 @@ public class HandleUpdateService : IHandleUpdateService
         
         switch (callbackQuery.Data.ToLower())
         {
-            case "show all books":
-                List<BookDataResponse> allBooks = await GetBookDataResponses(data.PageNumber, data);
-                await _messageService.UpdateBookButtonsAndMessageTextAsync(data.ChatId, data.MessageId,
-                    $"These books are in our library.{Environment.NewLine}" + GetFiltersAsAStringMessage(data.Filters), allBooks, firstPage, ChatState.AllBooks);
-                data.ChatState = ChatState.AllBooks;
-                await _chatService.UpdateChatInfoAsync(data);
-                break;
-
             case "next":
                 var books = await GetBookDataResponses(data.PageNumber + 1, data);
                 if (books.Count != 0)
@@ -453,6 +443,11 @@ public class HandleUpdateService : IHandleUpdateService
                 else if (data.ChatState == ChatState.Filters)
                 {
                     data.Filters = data.Filters is null ? new List<string>() : data.Filters;
+                    if (data.Filters.Contains(callbackQuery.Data))
+                    {
+                        return;
+                    }
+
                     data.Filters.Add(callbackQuery.Data);
                     await _chatService.UpdateChatInfoAsync(data);
                     var filters = await _sharePointService.GetBookPathsAsync();
