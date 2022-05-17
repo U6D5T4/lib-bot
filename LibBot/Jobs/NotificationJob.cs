@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using System.Resources;
+using System.Reflection;
 
 namespace LibBot.Jobs;
 
@@ -19,13 +21,14 @@ class NotificationJob : IJob
     private readonly ITelegramBotClient _botClient;
     private readonly IFirebaseClient _dbClient;
 
-
     private readonly IHttpClientFactory _httpClientFactory;
+    private ResourceManager _resourceReader;
     public NotificationJob(ITelegramBotClient botClient, IHttpClientFactory httpClientFactory, IOptions<DbConfiguration> dbConfiguration)
     {
         _botClient = botClient;
         _httpClientFactory = httpClientFactory;
         _dbClient = new ConfigureDb(dbConfiguration).GetFirebaseClient();
+        _resourceReader = new ResourceManager("LibBot.Resources.Resource", Assembly.GetExecutingAssembly());
     }
     public async Task<Task> Execute(IJobExecutionContext context)
     {
@@ -41,17 +44,17 @@ class NotificationJob : IJob
                 {
                     if (book.TakenToRead.Value.AddMonths(2).AddDays(-14).ToShortDateString() == DateTime.UtcNow.ToShortDateString())
                     {
-                        await _botClient.SendTextMessageAsync(user.ChatId, "There are 2 weeks left until the end of the book return period");
+                        await _botClient.SendTextMessageAsync(user.ChatId, String.Format(_resourceReader.GetString("BooksReturnPeriodFirst"), book.Title));
                     }
 
                     if (book.TakenToRead.Value.AddMonths(2).AddDays(-7).ToShortDateString() == DateTime.UtcNow.ToShortDateString())
                     {
-                        await _botClient.SendTextMessageAsync(user.ChatId, "There are 1 week left until the end of the book return period");
+                        await _botClient.SendTextMessageAsync(user.ChatId, String.Format(_resourceReader.GetString("BooksReturnPeriodSecond"), book.Title));
                     }
 
                     if (book.TakenToRead.Value.AddMonths(2).AddDays(-3).ToShortDateString() == DateTime.UtcNow.ToShortDateString())
                     {
-                        await _botClient.SendTextMessageAsync(user.ChatId, "There are 3 days left until the end of the book return period");
+                        await _botClient.SendTextMessageAsync(user.ChatId, String.Format(_resourceReader.GetString("BooksReturnPeriodThird"), book.Title));
                     }
 
                     break;

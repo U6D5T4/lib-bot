@@ -117,6 +117,18 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="BookReturnPeriodFirst" xml:space="preserve">
+    <value>There are 2 weeks left until the end of the book "{0}" return period.</value>
+    <comment>The message for the user who must return the specified book within two weeks.</comment>
+  </data>
+  <data name="BookReturnPeriodSecond" xml:space="preserve">
+    <value>There are 1 week left until the end of the book "{0}" return period.</value>
+    <comment>The message for the user who must return the specified book within one week.</comment>
+  </data>
+  <data name="BookReturnPeriodThird" xml:space="preserve">
+    <value>There are 3 days left until the end of the book "{0}" return period.</value>
+    <comment>The message for the user who must return the specified book within three days.</comment>
+  </data>
   <data name="BooksLibrary" xml:space="preserve">
     <value>These books are in our library.</value>
     <comment>The message when we see the result of the search for books in the library</comment>
