@@ -6,12 +6,15 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using System.Resources;
+using System.Reflection;
 
 namespace LibBot.Services;
 
 public class MailService : IMailService
 {
     private static readonly NLog.Logger _logger;
+    private ResourceManager _resourceReader;
     static MailService() => _logger = NLog.LogManager.GetCurrentClassLogger();
 
     private readonly EmailConfiguration _emailConfiguration;
@@ -21,6 +24,8 @@ public class MailService : IMailService
     {
         _emailConfiguration = emailConfiguration.Value;
         _botCredentialsConfiguration = botCredentialsConfiguration.Value;
+        _resourceReader = new ResourceManager("LibBot.Resources.Resource", Assembly.GetExecutingAssembly());
+
     }
 
     public async Task SendAuthenticationCodeAsync(string email, string username, int authenticationCode)
@@ -28,7 +33,7 @@ public class MailService : IMailService
         var message = new MimeMessage();
         message.From.Add(new MailboxAddress(_emailConfiguration.DisplayName, _botCredentialsConfiguration.Login));
         message.To.Add(new MailboxAddress(username, email));
-        message.Subject = "LibBot verification Token";
+        message.Subject = _resourceReader.GetString("SubjectMessageCode");
 
         message.Body = new TextPart("plain")
         {
@@ -56,7 +61,7 @@ public class MailService : IMailService
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "Error occurred when was trying to send an email");
+            _logger.Error(ex, _resourceReader.GetString("LogWrongSendCode"));
             throw;
         }
     }

@@ -9,6 +9,8 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using System.Resources;
+using System.Reflection;
 
 namespace LibBot.Services;
 
@@ -17,9 +19,11 @@ public class MessageService : IMessageService
     const string EmojiNewInSquare = "\U0001F193";
     const string EmojiLock = "\U0001F512";
     private readonly ITelegramBotClient _botClient;
+    private ResourceManager _resourceReader;
     public MessageService(ITelegramBotClient botClient)
     {
         _botClient = botClient;
+        _resourceReader = new ResourceManager("LibBot.Resources.Resource", Assembly.GetExecutingAssembly());
     }
 
     public async Task<Message> SendTextMessageAndClearKeyboardAsync(long chatId, string message)
@@ -30,20 +34,20 @@ public class MessageService : IMessageService
     public async Task<Message> AskToEnterOutlookLoginAsync(Message message)
     {
         return await SendTextMessageAndClearKeyboardAsync(message.Chat.Id,
-            "Please, enter your outlook email or outlook login.");
+            _resourceReader.GetString("EnterLogin"));
     }
 
     public async Task<Message> AskToEnterAuthCodeAsync(Message message)
     {
         return await SendTextMessageAndClearKeyboardAsync(message.Chat.Id,
-            "Please, check your email and enter your auth code here.");
+             _resourceReader.GetString("EnterCode"));
     }
 
     public async Task<Message> AksToEnterSearchQueryAsync(Message message)
     {
         var replyKeyboard = CreateReplyKeyboardMarkup("Cancel");
         return await _botClient.SendTextMessageAsync(message.Chat.Id,
-            "Please, enter book's name", replyMarkup: replyKeyboard);
+             _resourceReader.GetString("EnterBook"), replyMarkup: replyKeyboard);
     }
 
     public async Task EditMessageAfterYesAndNoButtonsAsync(CallbackQuery callbackQuery, string message)
@@ -53,7 +57,7 @@ public class MessageService : IMessageService
 
     public async Task<Message> SendWelcomeMessageAsync(long chatId)
     {
-        var message = "Hey, I'm LibBot. Choose the option";
+        var message = _resourceReader.GetString("ChooseOptions");
         var replyMarkup = GetMainMenu();
         return await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: replyMarkup);
     }
@@ -103,7 +107,7 @@ public class MessageService : IMessageService
                     buttons = new List<InlineKeyboardButton>();
                 }
                 isNeedSendMessage = true;
-                messageText = "Return till " + returnDate;
+                messageText = String.Format(_resourceReader.GetString("BooksReturnTill"), returnDate);
             }
             var buttonText = book.Title;
             var callbackData = book.Id.ToString();
@@ -263,7 +267,7 @@ public class MessageService : IMessageService
             ResizeKeyboard = true
         };
 
-        var message = $"Please enter your feedback";
+        var message = _resourceReader.GetString("EnterFeedback");
         await _botClient.SendTextMessageAsync(chatId, message, replyMarkup: replyMarkup);
     }
 
