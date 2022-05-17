@@ -215,6 +215,29 @@ public class HandleUpdateService : IHandleUpdateService
                 await HandleCancelOptionAsync(user);
                 break;
 
+            case "history":
+                user = await _userService.GetUserByChatIdAsync(message.Chat.Id);
+                if (user.BorrowedBooks is null)
+                {
+                    await _messageService.SendTextMessageAsync(message.Chat.Id, "You don't have any book in your history");
+                }
+                else
+                {
+                    var booksInfo = new List<string>();
+                    for (int i = 0; i < user.BorrowedBooks.Count; i++)
+                    {
+                        var bookTitle = string.IsNullOrEmpty(user.BorrowedBooks[i].Title) ? string.Empty : $"'{user.BorrowedBooks[i].Title}'.";
+                        var takenToRead = $"Taken to read: {user.BorrowedBooks[i].TakenToRead.ToShortDateString()}.";
+                        var returned = user.BorrowedBooks[i].Returned < user.BorrowedBooks[i].TakenToRead ? string.Empty : $"Returned: {user.BorrowedBooks[i].Returned.ToShortDateString()}.";
+                        booksInfo.Add($"{i + 1}. {bookTitle} {takenToRead} {returned}");
+                    }
+
+                    var history = string.Join(Environment.NewLine, booksInfo);
+                    await _messageService.SendTextMessageAsync(message.Chat.Id, history);
+                }
+
+                break;
+
             default:
                 user = await _userService.GetUserByChatIdAsync(message.Chat.Id);
                 if (user.MenuState == MenuState.Feedback)
@@ -312,7 +335,7 @@ public class HandleUpdateService : IHandleUpdateService
 
         await _userService.UpdateUserAsync(user);
     }
-    
+
     private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery)
     {
         var data = await _chatService.GetChatInfoAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId);
@@ -325,7 +348,7 @@ public class HandleUpdateService : IHandleUpdateService
         }
 
         bool firstPage = data.PageNumber == 0;
-        
+
         switch (callbackQuery.Data.ToLower())
         {
             case "next":
@@ -382,7 +405,7 @@ public class HandleUpdateService : IHandleUpdateService
                     {
                         await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, changeBookStatus);
                         await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, $"The book {dataAboutBook.Title} was successfully borrowed!");
-                        var borrowedBook = new BorrowedBook(data.BookId, changeBookStatus.TakenToRead.Value);
+                        var borrowedBook = new BorrowedBook(data.BookId, changeBookStatus.TakenToRead.Value, dataAboutBook.Title);
                         user.BorrowedBooks = user.BorrowedBooks is null ? new List<BorrowedBook>() : user.BorrowedBooks;
                         user.BorrowedBooks.Add(borrowedBook);
                         updateUserTask = _userService.UpdateUserAsync(user);
@@ -408,8 +431,12 @@ public class HandleUpdateService : IHandleUpdateService
                     {
                         await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, returnBook);
                         await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, $"The book {dataAboutBook.Title} was successfully returned!");
-                        user.BorrowedBooks.First(book => book.BookId == data.BookId).Returned = returnBook.Modified;
-                        updateUserTask = _userService.UpdateUserAsync(user);
+                        var bookToReturn = user.BorrowedBooks.FirstOrDefault(book => book.BookId == data.BookId);
+                        if (bookToReturn is not null)
+                        {
+                            bookToReturn.Returned = returnBook.Modified;
+                            updateUserTask = _userService.UpdateUserAsync(user);
+                        }
                     }
                     else
                     {

@@ -295,7 +295,7 @@ public class MessageService : IMessageService
         return new ReplyKeyboardMarkup(new[]
         {
             new KeyboardButton[] { "Library", "My books" },
-            new KeyboardButton[] { "Help" }
+            new KeyboardButton[] { "History", "Help" }
         })
         {
             ResizeKeyboard = true
