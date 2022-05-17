@@ -2,13 +2,21 @@
 using System.Threading.Tasks;
 using LibBot.Services.Interfaces;
 using Telegram.Bot.Types;
+using System.Resources;
+using System.Reflection;
+using System;
 
 namespace LibBot.Controllers;
 
 public class WebhookController : ControllerBase
 {
     private static readonly NLog.Logger _logger;
-    static WebhookController() => _logger = NLog.LogManager.GetCurrentClassLogger();
+    private static ResourceManager _resourceReader;
+    static WebhookController()
+        {
+          _logger = NLog.LogManager.GetCurrentClassLogger();
+          _resourceReader = new ResourceManager("LibBot.Resources.Resource", Assembly.GetExecutingAssembly());
+        }   
 
     [HttpPost]
     public async Task<IActionResult> Post([FromServices] IHandleUpdateService handleUpdateService,
@@ -16,7 +24,7 @@ public class WebhookController : ControllerBase
     {
         if (update is null)
         {
-            _logger.Warn($"{nameof(Update)} from telegram Api was null");
+            _logger.Warn(String.Format(_resourceReader.GetString("LogWrongTelegramUpdate"), nameof(Update)));
             return BadRequest();
         }
 

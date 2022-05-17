@@ -213,6 +213,10 @@
     <value>Error occurred when was trying to send auth code on email.</value>
     <comment>The message when the bot failed to send a message to the mail. This message is used by the logger</comment>
   </data>
+  <data name="LogWrongTelegramUpdate" xml:space="preserve">
+    <value>{0} from telegram Api was null.</value>
+    <comment>The message when we received empty updates from telegram.</comment>
+  </data>
   <data name="LostFilters" xml:space="preserve">
     <value>Sorry, we can't find message with categories.</value>
     <comment>The message when bot can't find message with filters in Firebase.</comment>
