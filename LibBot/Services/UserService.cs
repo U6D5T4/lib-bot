@@ -6,12 +6,15 @@ using LibBot.Models.Configurations;
 using LibBot.Models.SharePointResponses;
 using LibBot.Services.Interfaces;
 using Microsoft.Extensions.Options;
+using System.Resources;
+using System.Reflection;
 
 namespace LibBot.Services;
 
 public class UserService : IUserService
 {
     private static readonly NLog.Logger _logger;
+    private ResourceManager _resourceReader;
     static UserService() => _logger = NLog.LogManager.GetCurrentClassLogger();
 
     private readonly string _domainName;
@@ -27,6 +30,7 @@ public class UserService : IUserService
         _userDbService = userDbService;
         _codeDbService = codeDbService;
         _domainName = spConfiguration.Value.MailDomain;
+        _resourceReader = new ResourceManager("LibBot.Resources.Resource", Assembly.GetExecutingAssembly());
     }
 
     public async Task<bool> IsUserExistAsync(long chatId)
@@ -76,7 +80,7 @@ public class UserService : IUserService
         }
         catch(Exception ex)
         {
-            _logger.Error(ex, "Error occurred when was trying to send auth code on email");
+            _logger.Error(ex, _resourceReader.GetString("LogWrongSendCode"));
             throw;
         }
     }

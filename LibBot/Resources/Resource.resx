@@ -1,0 +1,284 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="BookReturnPeriodFirst" xml:space="preserve">
+    <value>There are 2 weeks left until the end of the book "{0}" return period.</value>
+    <comment>The message for the user who must return the specified book within two weeks.</comment>
+  </data>
+  <data name="BookReturnPeriodSecond" xml:space="preserve">
+    <value>There are 1 week left until the end of the book "{0}" return period.</value>
+    <comment>The message for the user who must return the specified book within one week.</comment>
+  </data>
+  <data name="BookReturnPeriodThird" xml:space="preserve">
+    <value>There are 3 days left until the end of the book "{0}" return period.</value>
+    <comment>The message for the user who must return the specified book within three days.</comment>
+  </data>
+  <data name="BooksLibrary" xml:space="preserve">
+    <value>These books are in our library.</value>
+    <comment>The message when we see the result of the search for books in the library</comment>
+  </data>
+  <data name="BooksReturnTill" xml:space="preserve">
+    <value>Return till: {0}</value>
+    <comment>The message when the user looks at his books, the date before which the books need to be returned</comment>
+  </data>
+  <data name="BorrowBookQuestion" xml:space="preserve">
+    <value>Are you sure you want to borrow the book "{0}"?</value>
+    <comment>The question when a user try to borrow the book</comment>
+  </data>
+  <data name="Chat_DbName" xml:space="preserve">
+    <value>Chats</value>
+    <comment>The name of the document with chats in the database</comment>
+  </data>
+  <data name="ChooseFilters" xml:space="preserve">
+    <value>Choose categories for books.</value>
+    <comment>The message when a user sees all the filters</comment>
+  </data>
+  <data name="ChooseOptions" xml:space="preserve">
+    <value>Hey, I'm LibBot. Choose the option.</value>
+    <comment>The message describing the sections of the main menu.</comment>
+  </data>
+  <data name="Code_DbName" xml:space="preserve">
+    <value>Codes</value>
+    <comment>The name of the document with codes in the database</comment>
+  </data>
+  <data name="EmptyLibrary" xml:space="preserve">
+    <value>There are no such books in our library.</value>
+    <comment>The message when when no books were found according to the specified parameters</comment>
+  </data>
+  <data name="EmptyLibrarySearchQuery" xml:space="preserve">
+    <value>Sorry, we can't find books with that name in our library.</value>
+    <comment>The message when the query entered by the user does not match the name of any of the books in SharePoint.</comment>
+  </data>
+  <data name="EmptyUserLibrary" xml:space="preserve">
+    <value>You don't read any books now.</value>
+    <comment>The message when a user don't read any books now</comment>
+  </data>
+  <data name="EnterBook" xml:space="preserve">
+    <value>Please, enter book's name.</value>
+    <comment>The message  when a user in search query section and needs enter book's name for find it.</comment>
+  </data>
+  <data name="EnterCode" xml:space="preserve">
+    <value>Please, check your email and enter your auth code here.</value>
+    <comment>The message when a user needs to check his code in his mail and enter it.</comment>
+  </data>
+  <data name="EnterFeedback" xml:space="preserve">
+    <value>Please, enter your feedback.</value>
+    <comment>The message  when a user in feedback section and needs enter feeback.</comment>
+  </data>
+  <data name="EnterLogin" xml:space="preserve">
+    <value>Please, enter your outlook email or outlook login.</value>
+    <comment>The message when a user needs enter his username or email to find him in SharePoint.</comment>
+  </data>
+  <data name="ExpiredCode" xml:space="preserve">
+    <value>Code lifetime was expired.</value>
+    <comment>The message when the code expired</comment>
+  </data>
+  <data name="Feedback_DbName" xml:space="preserve">
+    <value>Feedbacks</value>
+    <comment>The name of the document with feedbacks in the database</comment>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>bookPaths.txt</value>
+    <comment>The name of file where store all filters for books.</comment>
+  </data>
+  <data name="LogErrorLoadCategories" xml:space="preserve">
+    <value>Error occured when was trying to load book categories from file with filename: {0}</value>
+    <comment>The message when bot can't load book categories from file. This message is used by the logger.</comment>
+  </data>
+  <data name="LogFailedSearchUserByEmail" xml:space="preserve">
+    <value>SharePoint returned {0} when was trying to get user data by user email.</value>
+    <comment>The message when bot can't find a user by email in SharePoint. This message is used by the logger.</comment>
+  </data>
+  <data name="LogUnsuccessfullyReturned" xml:space="preserve">
+    <value>User tried to borrow the book "{0}", that had already been returned.</value>
+    <comment>The message when the user could not return the book because the book was returned from Sharepoint. This message is used by the logger</comment>
+  </data>
+  <data name="LogWrongSendCode" xml:space="preserve">
+    <value>Error occurred when was trying to send auth code on email.</value>
+    <comment>The message when the bot failed to send a message to the mail. This message is used by the logger</comment>
+  </data>
+  <data name="LogWrongTelegramUpdate" xml:space="preserve">
+    <value>{0} from telegram Api was null.</value>
+    <comment>The message when we received empty updates from telegram.</comment>
+  </data>
+  <data name="LostFilters" xml:space="preserve">
+    <value>Sorry, we can't find message with categories.</value>
+    <comment>The message when bot can't find message with filters in Firebase.</comment>
+  </data>
+  <data name="LostMessage" xml:space="preserve">
+    <value>Sorry, we lost this message.</value>
+    <comment>The message when bot can't find data about message in Firebase.</comment>
+  </data>
+  <data name="ReturnBookQuestion" xml:space="preserve">
+    <value>Are you sure you want to return the book "{0}"?</value>
+    <comment>The question when a user try to return the book.</comment>
+  </data>
+  <data name="SearchQueryResult" xml:space="preserve">
+    <value>This is the result of your search query.</value>
+    <comment>The message when a user receives a search result by book title.</comment>
+  </data>
+  <data name="SubjectMessageCode" xml:space="preserve">
+    <value>LibBot verification Token</value>
+    <comment>The name of the topic in the message sent by the bot.</comment>
+  </data>
+  <data name="SuccessfullyBorrowed" xml:space="preserve">
+    <value>The book "{0}" was successfully borrowed!</value>
+    <comment>The message when a user successfully borrowed the book.</comment>
+  </data>
+  <data name="SuccessfullyReturned" xml:space="preserve">
+    <value>The book "{0}" was successfully returned!</value>
+    <comment>The message when a user successfully returned the book.</comment>
+  </data>
+  <data name="Thanks" xml:space="preserve">
+    <value>Thanks!</value>
+    <comment>The message "Thanks".</comment>
+  </data>
+  <data name="UnsuccessfullyBorrowed" xml:space="preserve">
+    <value>Something went wrong. The book "{0}" is already borrowed.</value>
+    <comment>The message when a user could not borrow the book because  that was borrowed from Sharepoint.</comment>
+  </data>
+  <data name="UnsuccessfullyReturned" xml:space="preserve">
+    <value>Something went wrong. The book "{0}" is already returned.</value>
+    <comment>The message when a user could not return the book because  that was returned from Sharepoint.</comment>
+  </data>
+  <data name="UserFilters" xml:space="preserve">
+    <value>Your categories:</value>
+    <comment>The message when a user selects filters.</comment>
+  </data>
+  <data name="User_DbName" xml:space="preserve">
+    <value>Users</value>
+    <comment>The name of the document with users in the database.</comment>
+  </data>
+  <data name="WrongCode" xml:space="preserve">
+    <value>You entered wrong code.</value>
+    <comment>The message when a user entered the wrong code.</comment>
+  </data>
+  <data name="WrongCredentials" xml:space="preserve">
+    <value>We can't find user with such credentials.</value>
+    <comment>The message when bot can't find user credentials in SharePoint.</comment>
+  </data>
+  <data name="WrongDeleteMessage" xml:space="preserve">
+    <value>We tried delete message, that had sent more than 24 hours ago.</value>
+    <comment>The message when bot can't delete message, because that had sent more than 24 hours ago.</comment>
+  </data>
+  <data name="WrongSendCode" xml:space="preserve">
+    <value>Something go wrong, try again enter outlook email or outlook login.</value>
+    <comment>The message when there were problems with the authorization code.</comment>
+  </data>
+</root>
