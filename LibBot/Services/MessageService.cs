@@ -111,6 +111,8 @@ public class MessageService : IMessageService
                 messageText = String.Format(_resourceReader.GetString("BooksReturnTill"), returnDate);
             }
             var buttonText = book.Title;
+            if (book.Created.ToUniversalTime().AddMonths(3) >= DateTime.UtcNow)
+                buttonText = EmojiNew + buttonText;
             var callbackData = book.Id.ToString();
             var button = InlineKeyboardButton.WithCallbackData(text: buttonText, callbackData: callbackData);
             buttons.Add(button);
