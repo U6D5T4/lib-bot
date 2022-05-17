@@ -245,7 +245,7 @@ public class HandleUpdateService : IHandleUpdateService
                     if (searchBooks.Count != 0)
                         await _messageService.DisplayBookButtons(chatInfo.ChatId, _resourceReader.GetString("SearchQueryResult"), searchBooks, chatInfo.ChatState);
                     else
-                        await _messageService.DisplayBookButtons(chatInfo.ChatId, _resourceReader.GetString("EmptyLibrary"), searchBooks, chatInfo.ChatState);
+                        await _messageService.DisplayBookButtons(chatInfo.ChatId, _resourceReader.GetString("EmptyLibrarySearchQuery"), searchBooks, chatInfo.ChatState);
 
                 }
                 else
@@ -496,7 +496,7 @@ public class HandleUpdateService : IHandleUpdateService
         return Task.CompletedTask;
     }
 
-    private string GetFiltersAsAStringMessage(IEnumerable<string> filters) => filters is null ? string.Empty : _resourceReader.GetString("LostMessage") + $"{string.Join(", ", filters)}";
+    private string GetFiltersAsAStringMessage(IEnumerable<string> filters) => filters is null ? string.Empty : _resourceReader.GetString("UserFilters") + $"{string.Join(", ", filters)}";
 
     private async Task<List<BookDataResponse>> GetBookDataResponses(int pageNumber, ChatDbModel data)
     {

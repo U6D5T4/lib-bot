@@ -138,7 +138,7 @@
     <comment>The message when a user sees all the filters</comment>
   </data>
   <data name="ChooseOptions" xml:space="preserve">
-    <value>Hey, I'm LibBot. Choose the option</value>
+    <value>Hey, I'm LibBot. Choose the option.</value>
     <comment>The message describing the sections of the main menu.</comment>
   </data>
   <data name="Code_DbName" xml:space="preserve">
@@ -148,6 +148,10 @@
   <data name="EmptyLibrary" xml:space="preserve">
     <value>There are no such books in our library.</value>
     <comment>The message when when no books were found according to the specified parameters</comment>
+  </data>
+  <data name="EmptyLibrarySearchQuery" xml:space="preserve">
+    <value>Sorry, we can't find books with that name in our library.</value>
+    <comment>The message when the query entered by the user does not match the name of any of the books in SharePoint.</comment>
   </data>
   <data name="EmptyUserLibrary" xml:space="preserve">
     <value>You don't read any books now.</value>
@@ -254,7 +258,7 @@
     <comment>The message when bot can't find user credentials in SharePoint.</comment>
   </data>
   <data name="WrongDeleteMessage" xml:space="preserve">
-    <value>Bot tried delete message, that had sent more than 24 hours ago.</value>
+    <value>We tried delete message, that had sent more than 24 hours ago.</value>
     <comment>The message when bot can't delete message, because that had sent more than 24 hours ago.</comment>
   </data>
   <data name="WrongSendCode" xml:space="preserve">
