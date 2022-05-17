@@ -220,6 +220,16 @@ public class HandleUpdateService : IHandleUpdateService
                 await HandleCancelOptionAsync(user);
                 break;
 
+            case "new arrivals":
+                await DeletePreviousMessageAsync(message.Chat.Id);
+                var chatInfoNewBooks = new ChatDbModel(message.Chat.Id, message.MessageId + 1, ChatState.NewArrivals);
+                var newBooks = await _sharePointService.GetNewBooksAsync(chatInfoNewBooks.PageNumber);
+                var messageText = newBooks.Count != 0 ? "These are new books in our library" : "There are no new books in our library";
+                await _messageService.DisplayBookButtons(chatInfoNewBooks.ChatId,
+                    messageText, newBooks, chatInfoNewBooks.ChatState);
+                await _chatService.SaveChatInfoAsync(chatInfoNewBooks);
+                break;
+
             default:
                 user = await _userService.GetUserByChatIdAsync(message.Chat.Id);
                 if (user.MenuState == MenuState.Feedback)
@@ -367,10 +377,16 @@ public class HandleUpdateService : IHandleUpdateService
                 break;
 
             case "no":
-                if (data.ChatState == ChatState.AllBooks || data.ChatState == ChatState.SearchBooks)
+                if (data.ChatState == ChatState.AllBooks || data.ChatState == ChatState.SearchBooks || data.ChatState == ChatState.NewArrivals)
                 {
                     var booksAfterNo = await GetBookDataResponses(data.PageNumber, data);
-                    var message = data.ChatState == ChatState.AllBooks ? $"These books are in our library.{Environment.NewLine}" + GetFiltersAsAStringMessage(data.Filters) : "This is the result of your search query";
+                    var message = String.Empty;
+                    if (data.ChatState == ChatState.AllBooks)
+                        message = $"These books are in our library.{Environment.NewLine}" + GetFiltersAsAStringMessage(data.Filters);
+                    if (data.ChatState == ChatState.SearchBooks)
+                        message = "This is the result of your search query";
+                    if (data.ChatState == ChatState.NewArrivals)
+                        message = "These are new books in our library";
                     await _messageService.EditMessageAfterYesAndNoButtonsAsync(callbackQuery, message);
                     await UpdateInlineButtonsAsync(callbackQuery, booksAfterNo, firstPage, data.ChatState);
                 }
@@ -388,16 +404,22 @@ public class HandleUpdateService : IHandleUpdateService
 
             case "yes":
                 var user = await _userService.GetUserByChatIdAsync(callbackQuery.Message.Chat.Id);
-                if (data.ChatState == ChatState.AllBooks || data.ChatState == ChatState.SearchBooks)
+                if (data.ChatState == ChatState.AllBooks || data.ChatState == ChatState.SearchBooks || data.ChatState == ChatState.NewArrivals)
                 {
                     ChangeBookStatusRequest borrowBook = new ChangeBookStatusRequest(user.SharePointId, user.SharePointId, DateTime.UtcNow, DateTime.UtcNow);
 
                     var dataAboutBook = await _sharePointService.GetDataAboutBookAsync(data.BookId);
                     await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, borrowBook);
                     await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, $"The book {dataAboutBook.Title} was successfully borrowed!");
-                  
+
                     var updatedBooks = await UpdateBooksLibrary(callbackQuery, data);
-                    var message = data.ChatState == ChatState.AllBooks ? $"These books are in our library.{Environment.NewLine}" + GetFiltersAsAStringMessage(data.Filters) : "This is the result of your search query";
+                    var message = String.Empty;
+                    if (data.ChatState == ChatState.AllBooks)
+                        message = $"These books are in our library.{Environment.NewLine}" + GetFiltersAsAStringMessage(data.Filters);
+                    if (data.ChatState == ChatState.SearchBooks)
+                        message = "This is the result of your search query";
+                    if (data.ChatState == ChatState.NewArrivals)
+                        message = "These are new books in our library";
                     await _messageService.EditMessageAfterYesAndNoButtonsAsync(callbackQuery, message);
                     await UpdateInlineButtonsAsync(callbackQuery, updatedBooks, firstPage, data.ChatState);
                 }
@@ -435,7 +457,7 @@ public class HandleUpdateService : IHandleUpdateService
 
 
             default:
-                if (data.ChatState == ChatState.AllBooks || data.ChatState == ChatState.SearchBooks)
+                if (data.ChatState == ChatState.AllBooks || data.ChatState == ChatState.SearchBooks || data.ChatState == ChatState.NewArrivals)
                 {
                     data.BookId = int.Parse(callbackQuery.Data);
                     var dataAboutBook = await _sharePointService.GetDataAboutBookAsync(data.BookId);
@@ -496,6 +518,11 @@ public class HandleUpdateService : IHandleUpdateService
 
     private async Task<List<BookDataResponse>> GetBookDataResponses(int pageNumber, ChatDbModel data)
     {
+        if(data.ChatState == ChatState.NewArrivals)
+        {
+            return await _sharePointService.GetNewBooksAsync(pageNumber); 
+        }
+
         if (data.Filters is not null && data.Filters.Count > 0)
         {
             return await _sharePointService.GetBooksAsync(pageNumber, data.Filters);

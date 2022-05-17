@@ -85,7 +85,7 @@ public class SharePointService : ISharePointService
     {
         var client = _clientFactory.CreateClient("SharePoint");
 
-        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id,BookReaderId,TakenToRead,Technology&$top=300&$orderby=Title");
+        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id,BookReaderId,TakenToRead,Technology,Created&$top=300&$orderby=Title");
 
         var contentsString = await httpResponse.Content.ReadAsStringAsync();
         var dataBooks = Book.FromJson(contentsString);
@@ -144,6 +144,15 @@ public class SharePointService : ISharePointService
         var books = await GetBooksData();
         var filteredBooks = userId is null ? books : books.Where(book => book.BookReaderId.Equals(userId));
         return filteredBooks.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
+    }
+
+    public async Task<List<BookDataResponse>> GetNewBooksAsync(int pageNumber) 
+    {
+        {
+            var books = await GetBooksData();
+            var filteredBooks = books.Where(book => book.Created.ToUniversalTime().AddMonths(3) >= DateTime.UtcNow).ToList();
+            return filteredBooks.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
+        } 
     }
 
     public async Task<string[]> GetBookPathsAsync()

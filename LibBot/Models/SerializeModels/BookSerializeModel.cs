@@ -46,6 +46,9 @@ public class Result
 
     [JsonProperty("Technology")]
     public Technology Technology { get; set; }
+
+    [JsonProperty("Created")]
+    public DateTime Created { get; set; }
 }
 
 public class Technology
@@ -78,6 +81,7 @@ public partial class Book
             book.BookReaderId = item.BookReaderId;
             book.TakenToRead = item.TakenToRead;
             book.Technology = item.Technology;
+            book.Created = item.Created;
 
             books.Add(book);
         }
