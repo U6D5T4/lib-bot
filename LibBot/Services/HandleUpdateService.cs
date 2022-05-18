@@ -183,7 +183,7 @@ public class HandleUpdateService : IHandleUpdateService
                 {
                     await DeletePreviousMessageAsync(message.Chat.Id);
                     await _messageService.CreateUserBookButtonsAsync(chatInfoUserBooks.ChatId, myBooks);
-                    var returnDateDistinct = myBooks.Select(book => book.TakenToRead.Value.AddMonths(3).ToShortDateString()).Distinct();
+                    var returnDateDistinct = myBooks.Select(book => book.TakenToRead.Value.ToShortDateString()).Distinct();
                     for (int i = 1; i <= returnDateDistinct.Count(); i++)
                     {
                         chatInfoUserBooks.CurrentMessagesId.Add(message.MessageId + i);
@@ -313,7 +313,7 @@ public class HandleUpdateService : IHandleUpdateService
         var user = await _userService.GetUserByChatIdAsync(message.Chat.Id);
         if (user.BorrowedBooks is null)
         {
-            await _messageService.SendTextMessageAsync(message.Chat.Id, "You don't have any book in your history");
+            await _messageService.SendTextMessageAsync(message.Chat.Id, _resourceReader.GetString("NoBookInHistory"));
         }
         else
         {

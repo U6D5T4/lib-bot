@@ -229,6 +229,10 @@
     <value>Sorry, we lost this message.</value>
     <comment>The message when bot can't find data about message in Firebase.</comment>
   </data>
+  <data name="NoBookInHistory" xml:space="preserve">
+    <value>You don't have any book in your history.</value>
+    <comment>The message when user doesn't have any book in his history.</comment>
+  </data>
   <data name="ReturnBookQuestion" xml:space="preserve">
     <value>Are you sure you want to return the book "{0}"?</value>
     <comment>The question when a user try to return the book.</comment>
