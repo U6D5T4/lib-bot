@@ -31,7 +31,8 @@ class ClearInlineMessageJob : IJob
 
         foreach (var chat in chats)
         {
-           await _botClient.DeleteMessageAsync(chat.ChatId, chat.MessageId);
+            foreach(var message in chat.CurrentMessagesId)
+                await _botClient.DeleteMessageAsync(chat.ChatId, message);
         }
 
         await _dbClient.DeleteAsync("Chats");
