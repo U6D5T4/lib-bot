@@ -9,4 +9,5 @@ public class BookDataResponse
     public int? BookReaderId { get; set; }
     public DateTime? TakenToRead { get; set; }
     public Technology Technology { get; set; }
+    public DateTime Created { get; set; }
 }

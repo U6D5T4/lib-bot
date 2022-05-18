@@ -18,6 +18,7 @@ public class MessageService : IMessageService
 {
     const string EmojiNewInSquare = "\U0001F193";
     const string EmojiLock = "\U0001F512";
+    const string EmojiNew = "\uD83C\uDD95";
     private readonly ITelegramBotClient _botClient;
     private ResourceManager _resourceReader;
     public MessageService(ITelegramBotClient botClient)
@@ -110,6 +111,8 @@ public class MessageService : IMessageService
                 messageText = String.Format(_resourceReader.GetString("BooksReturnTill"), returnDate);
             }
             var buttonText = book.Title;
+            if (book.Created.ToUniversalTime().AddMonths(3) >= DateTime.UtcNow)
+                buttonText = EmojiNew + buttonText;
             var callbackData = book.Id.ToString();
             var button = InlineKeyboardButton.WithCallbackData(text: buttonText, callbackData: callbackData);
             buttons.Add(button);
@@ -171,8 +174,10 @@ public class MessageService : IMessageService
         foreach (BookDataResponse book in books)
         {
             var buttonText = (book.BookReaderId is null ? EmojiNewInSquare : EmojiLock) + $" {book.Title}";
+            if (book.Created.ToUniversalTime().AddMonths(3) >= DateTime.UtcNow)
+                buttonText = EmojiNew + buttonText;
             var callbackData = book.Id.ToString();
-            var button = InlineKeyboardButton.WithCallbackData(text: buttonText, callbackData: callbackData);
+            var button = InlineKeyboardButton.WithCallbackData(text:buttonText, callbackData: callbackData);
             buttons.Add(button);
         }
         if (firstPage && buttons.Count <= SharePointService.AmountBooks)
@@ -299,6 +304,7 @@ public class MessageService : IMessageService
         return new ReplyKeyboardMarkup(new[]
         {
             new KeyboardButton[] { "Library", "My books" },
+            new KeyboardButton[] { "New Arrivals" },
             new KeyboardButton[] { "Help" }
         })
         {
@@ -323,7 +329,7 @@ public class MessageService : IMessageService
         return new ReplyKeyboardMarkup(new[]
         {
             new KeyboardButton[] { "Search books", "Filter by path" },
-            new KeyboardButton[] { "Show all books" },
+            new KeyboardButton[] { "Show all books"},
             new KeyboardButton[] { "Cancel"}
         })
         {

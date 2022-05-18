@@ -18,4 +18,5 @@ public interface ISharePointService
     Task UpdateBooksData();
     Task<List<BookDataResponse>> GetBooksData();
     Task<BookChangeStatusResponse> GetDataAboutBookAsync(int bookId);
+    Task<List<BookDataResponse>> GetNewBooksAsync(int pageNumber);
 }

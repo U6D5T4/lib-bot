@@ -133,6 +133,10 @@
     <value>These books are in our library.</value>
     <comment>The message when we see the result of the search for books in the library</comment>
   </data>
+  <data name="BooksLibraryNew" xml:space="preserve">
+    <value>These are new books in our library.</value>
+    <comment>The message when we see the result of the search for new books in the library.</comment>
+  </data>
   <data name="BooksReturnTill" xml:space="preserve">
     <value>Return till: {0}</value>
     <comment>The message when the user looks at his books, the date before which the books need to be returned</comment>
