@@ -286,8 +286,10 @@ public class HandleUpdateService : IHandleUpdateService
         }
 
         var allBooks = await GetBookDataResponses(data.PageNumber, data);
-        await _messageService.DisplayBookButtons(data.ChatId, _resourceReader.GetString("EmptyLibrary") + $"{Environment.NewLine}"
+        var resourceName = allBooks.Count != 0 ? "BooksLibrary" : "EmptyLibrary";
+        await _messageService.DisplayBookButtons(data.ChatId, _resourceReader.GetString(resourceName) + $"{Environment.NewLine}"
             + GetFiltersAsAStringMessage(data.Filters), allBooks, data.ChatState);
+
         var chatInfoAllBooks = new ChatDbModel(message.Chat.Id, new List<int>() { message.MessageId + 1 }, ChatState.AllBooks)
         {
             Filters = data.Filters
