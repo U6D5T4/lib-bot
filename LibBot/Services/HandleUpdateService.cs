@@ -1,7 +1,10 @@
+using FireSharp.Interfaces;
 using LibBot.Models;
+using LibBot.Models.Configurations;
 using LibBot.Models.SharePointRequests;
 using LibBot.Models.SharePointResponses;
 using LibBot.Services.Interfaces;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

@@ -67,11 +67,13 @@ public class Startup
 
         #region Adding JobType
         services.AddSingleton<NotificationJob>();
+        services.AddSingleton<ClearInlineMessageJob>();
         #endregion
 
         #region Adding Jobs 
         List<JobMetadata> jobMetadatas = new List<JobMetadata>();
         jobMetadatas.Add(new JobMetadata(Guid.NewGuid(), typeof(NotificationJob), "Notify Job", "0 0 12 * * ?"));
+        jobMetadatas.Add(new JobMetadata(Guid.NewGuid(), typeof(ClearInlineMessageJob), "Clear Inline Message Job", "0 0 3 ? * * *"));
 
 
         services.AddSingleton(jobMetadatas);
