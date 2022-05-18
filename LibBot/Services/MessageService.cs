@@ -305,7 +305,7 @@ public class MessageService : IMessageService
         {
             new KeyboardButton[] { "Library", "My books" },
             new KeyboardButton[] { "New Arrivals" },
-            new KeyboardButton[] { "Help" }
+            new KeyboardButton[] { "History", "Help" }
         })
         {
             ResizeKeyboard = true
