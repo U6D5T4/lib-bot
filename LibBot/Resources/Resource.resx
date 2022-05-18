@@ -233,6 +233,10 @@
     <value>You don't have any book in your history.</value>
     <comment>The message when user doesn't have any book in his history.</comment>
   </data>
+  <data name="ReturnBookDate" xml:space="preserve">
+    <value>Returned: {0}.</value>
+    <comment>The date of returning book for user books history.</comment>
+  </data>
   <data name="ReturnBookQuestion" xml:space="preserve">
     <value>Are you sure you want to return the book "{0}"?</value>
     <comment>The question when a user try to return the book.</comment>
@@ -252,6 +256,10 @@
   <data name="SuccessfullyReturned" xml:space="preserve">
     <value>The book "{0}" was successfully returned!</value>
     <comment>The message when a user successfully returned the book.</comment>
+  </data>
+  <data name="TakenToReadBookDate" xml:space="preserve">
+    <value>Taken to read: {0}.</value>
+    <comment>The date of borrowing book for user books history.</comment>
   </data>
   <data name="Thanks" xml:space="preserve">
     <value>Thanks!</value>

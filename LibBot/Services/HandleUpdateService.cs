@@ -321,8 +321,8 @@ public class HandleUpdateService : IHandleUpdateService
             for (int i = 0; i < user.BorrowedBooks.Count; i++)
             {
                 var bookTitle = string.IsNullOrEmpty(user.BorrowedBooks[i].Title) ? string.Empty : $"'{user.BorrowedBooks[i].Title}'.";
-                var takenToRead = $"Taken to read: {user.BorrowedBooks[i].TakenToRead.ToShortDateString()}.";
-                var returned = user.BorrowedBooks[i].Returned < user.BorrowedBooks[i].TakenToRead ? string.Empty : $"Returned: {user.BorrowedBooks[i].Returned.ToShortDateString()}.";
+                var takenToRead = string.Format(_resourceReader.GetString("TakenToReadBookDate"), user.BorrowedBooks[i].TakenToRead.ToShortDateString());
+                var returned = user.BorrowedBooks[i].Returned < user.BorrowedBooks[i].TakenToRead ? string.Empty : string.Format(_resourceReader.GetString("ReturnBookDate"), user.BorrowedBooks[i].Returned.ToShortDateString());
                 booksInfo.Add($"{i + 1}. {bookTitle} {takenToRead} {returned}");
             }
 
