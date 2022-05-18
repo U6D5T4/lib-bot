@@ -9,5 +9,6 @@ public enum MenuState
     AllBooks,
     FilteredBooks,
     Help,
-    Feedback
+    Feedback,
+    NewArrivals
 }

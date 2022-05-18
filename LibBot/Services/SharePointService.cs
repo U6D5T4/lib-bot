@@ -7,12 +7,15 @@ using LibBot.Models.SharePointRequests;
 using LibBot.Models.SharePointResponses;
 using LibBot.Services.Interfaces;
 using Newtonsoft.Json;
+using System.Resources;
+using System.Reflection;
 
 namespace LibBot.Services;
 
 public class SharePointService : ISharePointService
 {
     private static readonly NLog.Logger _logger;
+    private ResourceManager _resourceReader;
     static SharePointService() => _logger = NLog.LogManager.GetCurrentClassLogger();
 
     private readonly IHttpClientFactory _clientFactory;
@@ -20,6 +23,14 @@ public class SharePointService : ISharePointService
 
     private static List<BookDataResponse> Books { get; set; }
     private static DateTime? LastDateUpdate { get; set; }
+    public static int AmountBooks { get; } = 8;
+
+    public SharePointService(IHttpClientFactory clientFactory, IFileService fileService)
+    {
+        _clientFactory = clientFactory;
+        _fileService = fileService;
+        _resourceReader = new ResourceManager("LibBot.Resources.Resource", Assembly.GetExecutingAssembly());
+    }
 
     public async Task<List<BookDataResponse>> GetBooksData()
     {
@@ -44,14 +55,6 @@ public class SharePointService : ISharePointService
         LastDateUpdate = DateTime.UtcNow;
     }
 
-    public static int AmountBooks { get; } = 8;
-
-    public SharePointService(IHttpClientFactory clientFactory, IFileService fileService)
-    {
-        _clientFactory = clientFactory;
-        _fileService = fileService;
-    }
-
     public async Task<bool> IsUserExistInSharePointAsync(string login)
     {
         var client = _clientFactory.CreateClient("SharePoint");
@@ -59,7 +62,7 @@ public class SharePointService : ISharePointService
         var httpResponse = await client.GetAsync($"_api/web/siteusers?$filter=Email eq '{login}'&$select=Email");
         if (!httpResponse.IsSuccessStatusCode)
         {
-            _logger.Warn($"SharePoint returned {httpResponse.StatusCode} when was trying to get user data by user email");
+            _logger.Warn(String.Format(_resourceReader.GetString("LogFailedSearchUserByEmail"), httpResponse.StatusCode));
             return false;
         }
 
@@ -85,7 +88,7 @@ public class SharePointService : ISharePointService
     {
         var client = _clientFactory.CreateClient("SharePoint");
 
-        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id,BookReaderId,TakenToRead,Technology&$top=300&$orderby=Title");
+        var httpResponse = await client.GetAsync($"_api/web/lists/GetByTitle('Books')/items?$select=Title,Id,BookReaderId,TakenToRead,Technology,Created&$top=300&$orderby=Title");
 
         var contentsString = await httpResponse.Content.ReadAsStringAsync();
         var dataBooks = Book.FromJson(contentsString);
@@ -146,16 +149,25 @@ public class SharePointService : ISharePointService
         return filteredBooks.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
     }
 
+    public async Task<List<BookDataResponse>> GetNewBooksAsync(int pageNumber) 
+    {
+        {
+            var books = await GetBooksData();
+            var filteredBooks = books.Where(book => book.Created.ToUniversalTime().AddMonths(3) >= DateTime.UtcNow).ToList();
+            return filteredBooks.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
+        } 
+    }
+
     public async Task<string[]> GetBookPathsAsync()
     {
-        var filename = "bookPaths.txt";
+        var filename = _resourceReader.GetString("FileName");
         try
         {
             return await _fileService.GetBookPathsFromFileAsync(filename);
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, $"Error occured when was trying to load book paths from file with filename: {filename}");
+            _logger.Error(ex, String.Format(_resourceReader.GetString("LogErrorLoadCategories"), filename));
             return Array.Empty<string>();
         }
     }

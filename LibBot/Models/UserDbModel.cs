@@ -1,4 +1,5 @@
-﻿using System.Net.Mail;
+﻿using System.Collections.Generic;
+using System.Net.Mail;
 
 namespace LibBot.Models;
 
@@ -9,4 +10,5 @@ public class UserDbModel
     public string Email { get; set; }
     public bool IsConfirmed { get; set; }
     public MenuState MenuState { get; set; }
+    public List<BorrowedBook> BorrowedBooks { get; set; }
 }
