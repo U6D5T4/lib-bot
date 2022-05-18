@@ -19,16 +19,15 @@ public class SharePointService : ISharePointService
     static SharePointService() => _logger = NLog.LogManager.GetCurrentClassLogger();
 
     private readonly IHttpClientFactory _clientFactory;
-    private readonly IFileService _fileService;
 
     private static List<BookDataResponse> Books { get; set; }
+    private static List<string> Filters { get; set; }
     private static DateTime? LastDateUpdate { get; set; }
     public static int AmountBooks { get; } = 8;
 
-    public SharePointService(IHttpClientFactory clientFactory, IFileService fileService)
+    public SharePointService(IHttpClientFactory clientFactory)
     {
         _clientFactory = clientFactory;
-        _fileService = fileService;
         _resourceReader = new ResourceManager("LibBot.Resources.Resource", Assembly.GetExecutingAssembly());
     }
 
@@ -158,20 +157,36 @@ public class SharePointService : ISharePointService
         } 
     }
 
-    public async Task<string[]> GetBookPathsAsync()
+    public async Task UpdateBookPathsAsync()
     {
-        var filename = _resourceReader.GetString("FileName");
-        try
+        var books = await GetBooksData();
+        var filters = new List<string>();
+        foreach (var book in books)
         {
-            return await _fileService.GetBookPathsFromFileAsync(filename);
+            foreach(var technology in book.Technology.Results)
+            {
+                if (!filters.Contains(technology.Label))
+                {
+                    filters.Add(technology.Label);
+                }
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.Error(ex, String.Format(_resourceReader.GetString("LogErrorLoadCategories"), filename));
-            return Array.Empty<string>();
-        }
+
+        Filters = filters;
     }
 
+    public async Task<string[]> GetBookPathsAsync()
+    {
+        if(Filters is not null)
+        {
+            return Filters.ToArray();
+        }
+        else
+        {
+            await UpdateBookPathsAsync();
+            return Filters.ToArray();
+        }
+    }
     public async Task<bool> ChangeBookStatus(long chatId, int bookId, ChangeBookStatusRequest bookBorrowRequest)
     {
         var client = _clientFactory.CreateClient("SharePoint");

@@ -197,14 +197,6 @@
     <value>Feedbacks</value>
     <comment>The name of the document with feedbacks in the database</comment>
   </data>
-  <data name="FileName" xml:space="preserve">
-    <value>bookPaths.txt</value>
-    <comment>The name of file where store all filters for books.</comment>
-  </data>
-  <data name="LogErrorLoadCategories" xml:space="preserve">
-    <value>Error occured when was trying to load book categories from file with filename: {0}</value>
-    <comment>The message when bot can't load book categories from file. This message is used by the logger.</comment>
-  </data>
   <data name="LogFailedSearchUserByEmail" xml:space="preserve">
     <value>SharePoint returned {0} when was trying to get user data by user email.</value>
     <comment>The message when bot can't find a user by email in SharePoint. This message is used by the logger.</comment>

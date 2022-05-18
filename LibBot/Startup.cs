@@ -51,7 +51,6 @@ public class Startup
         services.AddScoped<IConfigureDb, ConfigureDb>();
         services.AddScoped<IChatDbService, ChatDbService>();
         services.AddScoped<IChatService, ChatService>();
-        services.AddScoped<IFileService, FileService>();
         services.AddScoped<IFeedbackDbService, FeedbackDbService>();
         services.AddScoped<IFeedbackService, FeedbackService>();
 

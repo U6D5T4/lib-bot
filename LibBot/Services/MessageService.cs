@@ -304,7 +304,7 @@ public class MessageService : IMessageService
         return new ReplyKeyboardMarkup(new[]
         {
             new KeyboardButton[] { "Library", "My books" },
-            new KeyboardButton[] { "New Arrivals" },
+            new KeyboardButton[] { "New arrivals" },
             new KeyboardButton[] { "History", "Help" }
         })
         {

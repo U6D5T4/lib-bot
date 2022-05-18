@@ -302,6 +302,7 @@ public class HandleUpdateService : IHandleUpdateService
     {
         await DeletePreviousMessageAsync(message.Chat.Id);
         var chatInfoFilteredBooks = new ChatDbModel(message.Chat.Id, new List<int>() { messageId }, ChatState.Filters);
+        await _sharePointService.UpdateBookPathsAsync();
         var bookPaths = await _sharePointService.GetBookPathsAsync();
         await _messageService.SendFilterBooksMessageWithInlineKeyboardAsync(chatInfoFilteredBooks.ChatId, _resourceReader.GetString("ChooseFilters"), bookPaths);
         await _chatService.SaveChatInfoAsync(chatInfoFilteredBooks);
