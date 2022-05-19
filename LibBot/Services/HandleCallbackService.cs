@@ -82,7 +82,7 @@ public partial class HandleUpdateService
                     ChangeBookStatusRequest changeBookStatus = new ChangeBookStatusRequest(user.SharePointId, user.SharePointId, DateTime.UtcNow, DateTime.UtcNow);
 
                     var dataAboutBook = await _sharePointService.GetDataAboutBookAsync(data.BookId);
-                    await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, changeBookStatus);
+                    await _sharePointService.ChangeBookStatusAsync(callbackQuery.Message.Chat.Id, data.BookId, changeBookStatus);
                     await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, string.Format(_resourceReader.GetString("SuccessfullyBorrowed"), dataAboutBook.Title));
 
                     var borrowedBook = new BorrowedBook(data.BookId, changeBookStatus.TakenToRead.Value, dataAboutBook.Title);
@@ -109,7 +109,7 @@ public partial class HandleUpdateService
                     var dataAboutBook = await _sharePointService.GetDataAboutBookAsync(data.BookId);
                     if (dataAboutBook.IsBorrowedBook)
                     {
-                        await _sharePointService.ChangeBookStatus(callbackQuery.Message.Chat.Id, data.BookId, returnBook);
+                        await _sharePointService.ChangeBookStatusAsync(callbackQuery.Message.Chat.Id, data.BookId, returnBook);
                         await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, string.Format(_resourceReader.GetString("SuccessfullyReturned"), dataAboutBook.Title));
                         var bookToReturn = user.BorrowedBooks.LastOrDefault(book => book.BookId == data.BookId);
                         if (bookToReturn is not null)
@@ -160,7 +160,7 @@ public partial class HandleUpdateService
                     else
                     {
                         await _messageService.AnswerCallbackQueryAsync(callbackQuery.Id, string.Format(_resourceReader.GetString("UnsuccessfullyBorrowed"), dataAboutBook.Title));
-                        await _sharePointService.UpdateBooksData();
+                        await _sharePointService.UpdateBooksDataAsync();
                     }
                 }
                 else if (data.ChatState == ChatState.UserBooks)
@@ -200,7 +200,7 @@ public partial class HandleUpdateService
     }
     private async Task<List<BookDataResponse>> UpdateBooksLibrary(CallbackQuery callbackQuery, ChatDbModel data)
     {
-        await _sharePointService.UpdateBooksData();
+        await _sharePointService.UpdateBooksDataAsync();
         if (data.ChatState != ChatState.UserBooks)
         {
             return await GetBookDataResponses(data.PageNumber, data);
