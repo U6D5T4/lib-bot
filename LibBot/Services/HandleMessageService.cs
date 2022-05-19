@@ -108,7 +108,7 @@ public partial class HandleUpdateService
                 await DeletePreviousMessageAsync(message.Chat.Id);
                 var chatInfoNewBooks = new ChatDbModel(message.Chat.Id, new List<int> { message.MessageId + 1 }, ChatState.NewArrivals);
                 var newBooks = await _sharePointService.GetNewBooksAsync(chatInfoNewBooks.PageNumber);
-                var messageText = newBooks.Count != 0 ? "These are new books in our library" : "There are no new books in our library";
+                var messageText = newBooks.Count != 0 ? _resourceReader.GetString("BooksLibraryNew") : _resourceReader.GetString("EmptyBooksLibraryNew");
                 await _messageService.DisplayBookButtons(chatInfoNewBooks.ChatId,
                     messageText, newBooks, chatInfoNewBooks.ChatState);
                 await _chatService.SaveChatInfoAsync(chatInfoNewBooks);
@@ -164,7 +164,8 @@ public partial class HandleUpdateService
         }
 
         var allBooks = await GetBookDataResponses(data.PageNumber, data);
-        await _messageService.DisplayBookButtons(data.ChatId, _resourceReader.GetString("EmptyLibrary") + $"{Environment.NewLine}"
+        var resourceName = allBooks.Count != 0 ? "BooksLibrary" : "EmptyLibrary";
+        await _messageService.DisplayBookButtons(data.ChatId, _resourceReader.GetString(resourceName) + $"{Environment.NewLine}"
             + GetFiltersAsAStringMessage(data.Filters), allBooks, data.ChatState);
         var chatInfoAllBooks = new ChatDbModel(message.Chat.Id, new List<int>() { message.MessageId + 1 }, ChatState.AllBooks)
         {

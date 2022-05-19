@@ -161,6 +161,10 @@
     <value>Codes</value>
     <comment>The name of the document with codes in the database</comment>
   </data>
+  <data name="EmptyBooksLibraryNew" xml:space="preserve">
+    <value>There are no new books in our library</value>
+    <comment>The message when the library doesn't contain new books.</comment>
+  </data>
   <data name="EmptyLibrary" xml:space="preserve">
     <value>There are no such books in our library.</value>
     <comment>The message when when no books were found according to the specified parameters</comment>
