@@ -1,4 +1,0 @@
-﻿C#
-.NET
-ASP.Net
-ASP.NET MVC

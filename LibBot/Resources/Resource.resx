@@ -161,6 +161,10 @@
     <value>Codes</value>
     <comment>The name of the document with codes in the database</comment>
   </data>
+  <data name="EmptyBooksLibraryNew" xml:space="preserve">
+    <value>There are no new books in our library</value>
+    <comment>The message when the library doesn't contain new books.</comment>
+  </data>
   <data name="EmptyLibrary" xml:space="preserve">
     <value>There are no such books in our library.</value>
     <comment>The message when when no books were found according to the specified parameters</comment>
@@ -196,14 +200,6 @@
   <data name="Feedback_DbName" xml:space="preserve">
     <value>Feedbacks</value>
     <comment>The name of the document with feedbacks in the database</comment>
-  </data>
-  <data name="FileName" xml:space="preserve">
-    <value>bookPaths.txt</value>
-    <comment>The name of file where store all filters for books.</comment>
-  </data>
-  <data name="LogErrorLoadCategories" xml:space="preserve">
-    <value>Error occured when was trying to load book categories from file with filename: {0}</value>
-    <comment>The message when bot can't load book categories from file. This message is used by the logger.</comment>
   </data>
   <data name="LogFailedSearchUserByEmail" xml:space="preserve">
     <value>SharePoint returned {0} when was trying to get user data by user email.</value>

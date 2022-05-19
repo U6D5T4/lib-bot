@@ -19,39 +19,37 @@ public class SharePointService : ISharePointService
     static SharePointService() => _logger = NLog.LogManager.GetCurrentClassLogger();
 
     private readonly IHttpClientFactory _clientFactory;
-    private readonly IFileService _fileService;
 
     private static List<BookDataResponse> Books { get; set; }
+    private static List<string> Filters { get; set; }
     private static DateTime? LastDateUpdate { get; set; }
     public static int AmountBooks { get; } = 8;
 
-    public SharePointService(IHttpClientFactory clientFactory, IFileService fileService)
+    public SharePointService(IHttpClientFactory clientFactory)
     {
         _clientFactory = clientFactory;
-        _fileService = fileService;
         _resourceReader = new ResourceManager("LibBot.Resources.Resource", Assembly.GetExecutingAssembly());
     }
 
-    public async Task<List<BookDataResponse>> GetBooksData()
+    public async Task<List<BookDataResponse>> GetBooksDataAsync()
     {
         if (Books is null || !LastDateUpdate.HasValue)
         {
-            Books = await GetAllBooksFromSharePointAsync();
-            LastDateUpdate = DateTime.UtcNow;
+            await UpdateBooksDataAsync();
             return Books;
         }
 
         if (LastDateUpdate.Value.AddHours(2).ToUniversalTime() <= DateTime.UtcNow)
         {
-            Books = await GetAllBooksFromSharePointAsync();
-            LastDateUpdate = DateTime.UtcNow;
+            await UpdateBooksDataAsync();
         }
 
         return Books;
     }
-    public async Task UpdateBooksData()
+    public async Task UpdateBooksDataAsync()
     {
         Books = await GetAllBooksFromSharePointAsync();
+        UpdateBookPaths(Books);
         LastDateUpdate = DateTime.UtcNow;
     }
 
@@ -122,21 +120,21 @@ public class SharePointService : ISharePointService
     }
     public async Task<List<BookDataResponse>> GetBooksAsync(int pageNumber)
     {
-        var books = await GetBooksData();
+        var books = await GetBooksDataAsync();
         return books.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
     }
 
 
     public async Task<List<BookDataResponse>> GetBooksAsync(int pageNumber, List<string> filters)
     {
-        var books = await GetBooksData();
+        var books = await GetBooksDataAsync();
         var filteredBooks = filters is null ? books : books.Where(book => filters.Any(filter => book.Technology.Results.Any(tech => tech.Label == filter)));
         return filteredBooks.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
     }
 
     public async Task<List<BookDataResponse>> GetBooksAsync(int pageNumber, string searchQuery)
     {
-        var books = await GetBooksData();
+        var books = await GetBooksDataAsync();
         var filteredBooks = searchQuery is null ? books : books
             .Where(book => book.Title.ToLower().Contains(searchQuery.ToLower()));
         return filteredBooks.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
@@ -144,7 +142,7 @@ public class SharePointService : ISharePointService
 
     public async Task<List<BookDataResponse>> GetBooksAsync(int pageNumber, int? userId)
     {
-        var books = await GetBooksData();
+        var books = await GetBooksDataAsync();
         var filteredBooks = userId is null ? books : books.Where(book => book.BookReaderId.Equals(userId));
         return filteredBooks.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
     }
@@ -152,27 +150,42 @@ public class SharePointService : ISharePointService
     public async Task<List<BookDataResponse>> GetNewBooksAsync(int pageNumber) 
     {
         {
-            var books = await GetBooksData();
+            var books = await GetBooksDataAsync();
             var filteredBooks = books.Where(book => book.Created.ToUniversalTime().AddMonths(3) >= DateTime.UtcNow).ToList();
             return filteredBooks.Skip(pageNumber * AmountBooks).Take(AmountBooks + 1).ToList();
         } 
     }
 
-    public async Task<string[]> GetBookPathsAsync()
+    public void UpdateBookPaths(List<BookDataResponse> books)
     {
-        var filename = _resourceReader.GetString("FileName");
-        try
+        var filters = new List<string>();
+        foreach (var book in books)
         {
-            return await _fileService.GetBookPathsFromFileAsync(filename);
+            foreach(var technology in book.Technology.Results)
+            {
+                if (!filters.Contains(technology.Label))
+                {
+                    filters.Add(technology.Label);
+                }
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.Error(ex, String.Format(_resourceReader.GetString("LogErrorLoadCategories"), filename));
-            return Array.Empty<string>();
-        }
+
+        Filters = filters;
     }
 
-    public async Task<bool> ChangeBookStatus(long chatId, int bookId, ChangeBookStatusRequest bookBorrowRequest)
+    public async Task<string[]> GetBookPathsAsync()
+    {
+        if(Filters is not null)
+        {
+            return Filters.ToArray();
+        }
+        else
+        {
+            await UpdateBooksDataAsync();
+            return Filters.ToArray();
+        }
+    }
+    public async Task<bool> ChangeBookStatusAsync(long chatId, int bookId, ChangeBookStatusRequest bookBorrowRequest)
     {
         var client = _clientFactory.CreateClient("SharePoint");
         var formDigestValue = await GetFormDigestValueFromSharePointAsync();
