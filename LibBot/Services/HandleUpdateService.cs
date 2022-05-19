@@ -136,7 +136,7 @@ public partial class HandleUpdateService : IHandleUpdateService
             throw;
         }
     }
-
+    
     public Task HandleErrorAsync(Exception exception)
     {
         var ErrorMessage = exception switch
