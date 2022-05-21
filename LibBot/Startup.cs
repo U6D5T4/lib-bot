@@ -54,12 +54,14 @@ public class Startup
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<IFeedbackDbService, FeedbackDbService>();
         services.AddScoped<IFeedbackService, FeedbackService>();
+        services.AddScoped<IAuthDbService, AuthDbService>();
 
         services.Configure<EmailConfiguration>(Configuration.GetSection("EmailConfiguration"));
         services.Configure<DbConfiguration>(Configuration.GetSection("DbConfiguration"));
         services.Configure<BotConfiguration>(Configuration.GetSection("BotConfiguration"));
         services.Configure<BotCredentialsConfiguration>(Configuration.GetSection("BotCredentials"));
         services.Configure<SharePointConfiguration>(Configuration.GetSection("SharePointConfiguration"));
+        services.Configure<AuthDbConfiguration>(Configuration.GetSection("AuthDbConfiguration"));
 
 
         services.AddSingleton<IJobFactory, MyJobFactory>();

@@ -3,5 +3,5 @@
 public class AuthDbRefreshRequest
 {
     public string RefreshToken { get; set; }
-    public string Parameter { get; } = "refreshToken";
+    public string GrantType { get; } = "refresh_token";
 }

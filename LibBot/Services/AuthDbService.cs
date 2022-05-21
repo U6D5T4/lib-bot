@@ -7,34 +7,38 @@ using LibBot.Models.SharePointRequests;
 using System.Threading.Tasks;
 using System;
 using LibBot.Models.DbRequest;
+using Newtonsoft.Json;
+using LibBot.Models.DbResponse;
+using LibBot.Services.Interfaces;
 
 namespace LibBot.Services;
 
-public class AuthDbService
+public class AuthDbService : IAuthDbService
 {
     private IOptions<AuthDbConfiguration> _dbConfiguration;
     private static string Token { get; set; }
     private static string RefreshToken { get; set; }
-    private static DateTime ExpiredDate { get; set; }
-
+    private static string ExpiresIn { get; set; }
     private static DateTime CreateTokenDate {get;set;}
 
     public AuthDbService(IOptions<AuthDbConfiguration> dbConfiguration)
     {
         _dbConfiguration = dbConfiguration;
     }
-   public async Task GetTokens()
+
+    public async Task GetTokens()
     {
         using var client = new HttpClient();
-        var res = new AuthDbRequest() { Login = _dbConfiguration.Value.Login, Password = _dbConfiguration.Value.Password, Parameter = true};
-        var content = JsonContent.Create(res);
+        var requestData = new AuthDbRequest() { Email = _dbConfiguration.Value.Login, Password = _dbConfiguration.Value.Password, ReturnSecureToken = true};
+        var content = JsonContent.Create(requestData);
         var responce = await client.PostAsync(_dbConfiguration.Value.BaseAddress, content);
-        var result = await responce.Content.ReadAsStringAsync<AuthDbResponse>();
-        Token = result.AccessToken;
-        RefreshToken = result.RefreshToken;
-        ExpiredDate = result.ExpiredDate;
+        var stringResponce = await responce.Content.ReadAsStringAsync();
+        var data = JsonConvert.DeserializeObject<AuthDbResponse>(stringResponce);
+        Token = data.IdToken;
+        RefreshToken = data.RefreshToken;
+        ExpiresIn = data.ExpiresIn;
+        CreateTokenDate = DateTime.Now;
     }
-
 
     public async Task UpdateTokens()
     {
@@ -42,13 +46,15 @@ public class AuthDbService
         var requestParameter = new AuthDbRefreshRequest() { RefreshToken = RefreshToken};
         var content = JsonContent.Create(requestParameter);
         var responce = await client.PostAsync(_dbConfiguration.Value.RefreshAddress, content);
-        var result = await responce.Content.ReadAsStringAsync<AuthDbResponse>();
-        Token = result.AccessToken;
-        RefreshToken = result.RefreshToken;
-        ExpiredDate = result.ExpiredDate;
+        var stringResponce = await responce.Content.ReadAsStringAsync();
+        var data = JsonConvert.DeserializeObject<AuthRefreshDbResponce>(stringResponce);
+        Token = data.Id_Token;
+        RefreshToken = data.Refresh_Token;
+        ExpiresIn= data.Expires_In;
+        CreateTokenDate= DateTime.Now;
     }
 
-    public async Task<string> GetToken()
+    public async Task<string> GetAccessToken()
     {
         if(Token is null)
         {
@@ -56,7 +62,7 @@ public class AuthDbService
             return Token;
         }
 
-        if(DateTime.Now >= CreateTokenDate.AddMilliseconds(ExpiredDate.Millisecond))
+        if(DateTime.Now <= CreateTokenDate.AddSeconds(Convert.ToInt32(ExpiresIn)))
         {
             return Token;
         }
@@ -66,5 +72,4 @@ public class AuthDbService
            return Token;
         }
     }
-
 }

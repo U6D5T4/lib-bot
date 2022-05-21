@@ -2,7 +2,7 @@
 
 public class AuthDbRequest
 {
-    public string Login { get; set; }
+    public string Email { get; set; }
     public string Password { get; set; }
-    public bool Parameter { get; set; }
+    public bool ReturnSecureToken { get; set; }
 }
