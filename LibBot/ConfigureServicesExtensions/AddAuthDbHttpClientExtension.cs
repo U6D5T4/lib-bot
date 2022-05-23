@@ -2,8 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Net;
-using System.Net.Http;
 
 namespace LibBot.ConfigureServicesExtensions;
 
@@ -14,7 +12,7 @@ public static class AddAuthDbHttpClientExtension
     {
         var authDbConfiguration =
             configuration.GetSection("AuthDbConfiguration").Get<AuthDbConfiguration>();
-        services.AddHttpClient("AuthDb", httpClient =>
+        services.AddHttpClient("AuthFirebase", httpClient =>
         {
             httpClient.BaseAddress = new Uri(authDbConfiguration.BaseAddress);
         });

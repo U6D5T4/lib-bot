@@ -85,7 +85,7 @@ class NotificationJob : Tokens, IJob
     private async Task<List<UserDbModel>> ReadAllUsersAsync()
     {
         var token = await GetAccessToken();
-        var client = _httpClientFactory.CreateClient("AuthDb");
+        var client = _httpClientFactory.CreateClient("Firebase");
         var uri = client.BaseAddress + _resourceReader.GetString("User_DbName") + ".json" + $"?auth={token}";
         var responce = await client.GetAsync(uri);
         var stringResponce = await responce.Content.ReadAsStringAsync();
@@ -100,10 +100,9 @@ class NotificationJob : Tokens, IJob
         return users;
     }
 
-    private async Task GetTokens(object requestData, bool refresh)
+    private async Task GetTokens(HttpContent content, bool refresh)
     {
-        var client = _httpClientFactory.CreateClient("AuthDb");
-        var content = JsonContent.Create(requestData);
+        var client = _httpClientFactory.CreateClient("AuthFirebase");
         var uri = refresh ? _dbConfiguration.Value.RefreshAddress : client.BaseAddress.ToString();
         var responce = await client.PostAsync(uri, content);
         var stringResponce = await responce.Content.ReadAsStringAsync();
@@ -116,7 +115,8 @@ class NotificationJob : Tokens, IJob
         if (Token is null)
         {
             var requestData = new AuthDbRequest() { Email = _dbConfiguration.Value.Login, Password = _dbConfiguration.Value.Password, ReturnSecureToken = true };
-            await GetTokens(requestData, false);
+            var content = JsonContent.Create(requestData);
+            await GetTokens(content, false);
             return Token;
         }
 
@@ -127,7 +127,8 @@ class NotificationJob : Tokens, IJob
         else
         {
             var requestData = new AuthDbRefreshRequest() { RefreshToken = RefreshToken };
-            await GetTokens(requestData, true);
+            var content = JsonContent.Create(requestData);
+            await GetTokens(content, true);
             return Token;
         }
     }

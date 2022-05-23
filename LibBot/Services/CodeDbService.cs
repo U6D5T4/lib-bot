@@ -24,7 +24,7 @@ public class CodeDbService:ICodeDbService
     public async Task CreateItemAsync(CodeDbModel item)
     {
         var token = await _authDbService.GetAccessToken();
-        var client = _httpClientFactory.CreateClient("Db");
+        var client = _httpClientFactory.CreateClient("Firebase");
         var uri = client.BaseAddress + _resourceReader.GetString("Code_DbName") + '/' + item.ChatId + ".json" + $"?auth={token}";
         var res = await client.PutAsync(uri, JsonContent.Create(item));
     }
@@ -32,7 +32,7 @@ public class CodeDbService:ICodeDbService
     public async Task<CodeDbModel> ReadItemAsync(long chatId) 
     {
         var token = await _authDbService.GetAccessToken();
-        var client = _httpClientFactory.CreateClient("Db");
+        var client = _httpClientFactory.CreateClient("Firebase");
         var uri = client.BaseAddress + _resourceReader.GetString("Code_DbName") + '/' + chatId + ".json" + $"?auth={token}";
         var responce = await client.GetAsync(uri);
         var stringResponce = await responce.Content.ReadAsStringAsync();
@@ -43,7 +43,7 @@ public class CodeDbService:ICodeDbService
     public async Task UpdateItemAsync(CodeDbModel item)
     {
         var token = await _authDbService.GetAccessToken();
-        var client = _httpClientFactory.CreateClient("Db");
+        var client = _httpClientFactory.CreateClient("Firebase");
         var uri = client.BaseAddress + _resourceReader.GetString("Code_DbName") + '/' + item.ChatId + ".json" + $"?auth={token}";
         await client.PatchAsync(uri, JsonContent.Create(item));
     }
@@ -51,7 +51,7 @@ public class CodeDbService:ICodeDbService
     public async Task DeleteItemAsync(long chatId)
     {
         var token = await _authDbService.GetAccessToken();
-        var client = _httpClientFactory.CreateClient("Db");
+        var client = _httpClientFactory.CreateClient("Firebase");
         var uri = client.BaseAddress + _resourceReader.GetString("Code_DbName") + '/' + chatId + ".json" + $"?auth={token}";
         await client.DeleteAsync(uri);
     }

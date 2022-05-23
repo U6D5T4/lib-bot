@@ -23,10 +23,9 @@ public class AuthDbService : Tokens, IAuthDbService
         _httpClientFactory = httpClientFactory;
     }
 
-    private async Task GetTokens(object requestData, bool refresh)
+    private async Task GetTokens(HttpContent content, bool refresh)
     {
-        var client = _httpClientFactory.CreateClient("AuthDb");
-        var content = JsonContent.Create(requestData);
+        var client = _httpClientFactory.CreateClient("AuthFirebase");
         var uri =  refresh ? _dbConfiguration.Value.RefreshAddress : client.BaseAddress.ToString();
         var responce = await client.PostAsync(uri, content);
         var stringResponce = await responce.Content.ReadAsStringAsync();
@@ -39,7 +38,8 @@ public class AuthDbService : Tokens, IAuthDbService
         if(Token is null)
         {
             var requestData = new AuthDbRequest() { Email = _dbConfiguration.Value.Login, Password = _dbConfiguration.Value.Password, ReturnSecureToken = true};
-            await GetTokens(requestData, false);
+            var content = JsonContent.Create(requestData);
+            await GetTokens(content, false);
             return Token;
         }
 
@@ -50,7 +50,8 @@ public class AuthDbService : Tokens, IAuthDbService
         else
         {
             var requestData = new AuthDbRefreshRequest() { RefreshToken = RefreshToken };
-            await GetTokens(requestData, true);
+            var content = JsonContent.Create(requestData);
+            await GetTokens(content, true);
             return Token;
         }
     }

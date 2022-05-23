@@ -12,7 +12,7 @@ public static class AddDbHttpClientExtension
     {
         var DbConfiguration =
             configuration.GetSection("DbConfiguration").Get<DbConfiguration>();
-        services.AddHttpClient("Db", httpClient =>
+        services.AddHttpClient("Firebase", httpClient =>
         {
             httpClient.BaseAddress = new Uri(DbConfiguration.BasePath);
         });

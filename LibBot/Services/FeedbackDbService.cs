@@ -28,7 +28,7 @@ public class FeedbackDbService : IFeedbackDbService
     public async Task CreateItemAsync(UserFeedbackDbModel item)
     {
         var token = await _authDbService.GetAccessToken();
-        var client = _httpClientFactory.CreateClient("Db");
+        var client = _httpClientFactory.CreateClient("Firebase");
         var uri = client.BaseAddress + _resourceReader.GetString("Feedback_DbName") + '/' + item.ChatId + ".json" + $"?auth={token}";
         var res = await client.PostAsync(uri, JsonContent.Create(item));
     }
