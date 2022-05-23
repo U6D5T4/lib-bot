@@ -131,6 +131,7 @@ public partial class HandleUpdateService
                         await _messageService.DeleteMessageAsync(data.ChatId, callbackQuery.Message.MessageId);
                         data.CurrentMessagesId.Remove(callbackQuery.Message.MessageId);
                         await _chatService.SaveChatInfoAsync(data);
+                        await _messageService.DisplayBookButtons(callbackQuery.Message.Chat.Id, _resourceReader.GetString("EmptyUserLibrary"), books, data.ChatState);
                     }
                     else
                     {
