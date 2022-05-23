@@ -1,28 +1,36 @@
-﻿using FireSharp.Interfaces;
-using LibBot.Models;
+﻿using LibBot.Models;
 using LibBot.Models.Configurations;
-using LibBot.Services;
+using LibBot.Models.DbRequest;
+using LibBot.Models.DbResponse;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Quartz;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using System.Resources;
+using System.Reflection;
+using LibBot.Models.SharePointResponses;
+using LibBot.Models.SharePointRequests;
 
 namespace LibBot.Jobs;
 
-class ClearInlineMessageJob : IJob
+class ClearInlineMessageJob : Tokens, IJob
 {
     private readonly ITelegramBotClient _botClient;
-    private readonly IFirebaseClient _dbClient;
+    private IOptions<AuthDbConfiguration> _dbConfiguration;
     private readonly IHttpClientFactory _httpClientFactory;
+    private ResourceManager _resourceReader;
 
-    public ClearInlineMessageJob(ITelegramBotClient botClient, IHttpClientFactory httpClientFactory, IOptions<DbConfiguration> dbConfiguration)
+    public ClearInlineMessageJob(ITelegramBotClient botClient, IHttpClientFactory httpClientFactory, IOptions<AuthDbConfiguration> dbConfiguration)
     {
         _botClient = botClient;
         _httpClientFactory = httpClientFactory;
-        _dbClient = new ConfigureDb(dbConfiguration).GetFirebaseClient();
+        _dbConfiguration = dbConfiguration;
+        _resourceReader = new ResourceManager("LibBot.Resources.Resource", Assembly.GetExecutingAssembly());
     }
 
     public async Task<Task> Execute(IJobExecutionContext context)
@@ -35,7 +43,10 @@ class ClearInlineMessageJob : IJob
                 await _botClient.DeleteMessageAsync(chat.ChatId, message);
         }
 
-        await _dbClient.DeleteAsync("Chats");
+        var token = await GetAccessToken();
+        var client = _httpClientFactory.CreateClient("Firebase");
+        var uri = client.BaseAddress + _resourceReader.GetString("Chat_DbName") + ".json" + $"?auth={token}";
+        await client.DeleteAsync(uri);
 
         return Task.CompletedTask;
     }
@@ -47,8 +58,12 @@ class ClearInlineMessageJob : IJob
 
     private async Task<List<ChatDbModel>> ReadAllChatsAsync()
     {
-        var result = await _dbClient.GetAsync("Chats");
-        var data = JsonConvert.DeserializeObject<Dictionary<string, ChatDbModel>>(result.Body.ToString());
+        var token = await GetAccessToken();
+        var client = _httpClientFactory.CreateClient("Firebase");
+        var uri = client.BaseAddress + _resourceReader.GetString("Chat_DbName") + ".json" + $"?auth={token}";
+        var responce = await client.GetAsync(uri);
+        var stringResponce = await responce.Content.ReadAsStringAsync();
+        var data = JsonConvert.DeserializeObject<Dictionary<string, ChatDbModel>>(stringResponce);
 
         List<ChatDbModel> chats = new List<ChatDbModel>();
         foreach (var key in data.Keys)
@@ -58,6 +73,39 @@ class ClearInlineMessageJob : IJob
         }
 
         return chats;
+    }
+
+    private async Task GetTokens(HttpContent content, bool refresh)
+    {
+        var client = _httpClientFactory.CreateClient("AuthFirebase");
+        var uri = refresh ? _dbConfiguration.Value.RefreshAddress : client.BaseAddress.ToString();
+        var responce = await client.PostAsync(uri, content);
+        var stringResponce = await responce.Content.ReadAsStringAsync();
+        var data = JsonConvert.DeserializeObject<DbResponse>(stringResponce);
+        SetDataTokens(data);
+    }
+
+    private async Task<string> GetAccessToken()
+    {
+        if (Token is null)
+        {
+            var requestData = new AuthDbRequest() { Email = _dbConfiguration.Value.Login, Password = _dbConfiguration.Value.Password, ReturnSecureToken = true };
+            var content = JsonContent.Create(requestData);
+            await GetTokens(content, false);
+            return Token;
+        }
+
+        if (DateTime.Now <= CreateTokenDate.AddSeconds(Convert.ToInt32(ExpiresIn)).AddMinutes(-1))
+        {
+            return Token;
+        }
+        else
+        {
+            var requestData = new AuthDbRefreshRequest() { RefreshToken = RefreshToken };
+            var content = JsonContent.Create(requestData);
+            await GetTokens(content, true);
+            return Token;
+        }
     }
 }
 

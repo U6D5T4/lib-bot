@@ -37,6 +37,8 @@ public class Startup
 
 
         services.AddSharePointHttpClient(Configuration);
+        services.AddAuthDbHttpClient(Configuration);
+        services.AddDbHttpClient(Configuration);
         services.AddHttpClient("tgwebhook")
           .AddTypedClient<ITelegramBotClient>(httpClient
               => new TelegramBotClient(_botConfiguration.BotToken, httpClient));
@@ -48,17 +50,18 @@ public class Startup
         services.AddScoped<ISharePointService, SharePointService>();
         services.AddScoped<IUserDbService, UserDbService>();
         services.AddScoped<ICodeDbService, CodeDbService>();
-        services.AddScoped<IConfigureDb, ConfigureDb>();
         services.AddScoped<IChatDbService, ChatDbService>();
         services.AddScoped<IChatService, ChatService>();
         services.AddScoped<IFeedbackDbService, FeedbackDbService>();
         services.AddScoped<IFeedbackService, FeedbackService>();
+        services.AddScoped<IAuthDbService, AuthDbService>();
 
         services.Configure<EmailConfiguration>(Configuration.GetSection("EmailConfiguration"));
         services.Configure<DbConfiguration>(Configuration.GetSection("DbConfiguration"));
         services.Configure<BotConfiguration>(Configuration.GetSection("BotConfiguration"));
         services.Configure<BotCredentialsConfiguration>(Configuration.GetSection("BotCredentials"));
         services.Configure<SharePointConfiguration>(Configuration.GetSection("SharePointConfiguration"));
+        services.Configure<AuthDbConfiguration>(Configuration.GetSection("AuthDbConfiguration"));
 
 
         services.AddSingleton<IJobFactory, MyJobFactory>();

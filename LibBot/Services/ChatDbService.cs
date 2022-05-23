@@ -1,6 +1,8 @@
-﻿using FireSharp.Interfaces;
-using LibBot.Models;
+﻿using LibBot.Models;
 using LibBot.Services.Interfaces;
+using Newtonsoft.Json;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Reflection;
 using System.Resources;
 using System.Threading.Tasks;
@@ -9,36 +11,48 @@ namespace LibBot.Services;
 
 public class ChatDbService: IChatDbService
 {
-    private readonly IConfigureDb _configureDb;
-    private readonly IFirebaseClient _client;
     private ResourceManager _resourceReader;
-
-    public ChatDbService(IConfigureDb configureDb)
+    private readonly IAuthDbService _authDbService;
+    private readonly IHttpClientFactory _httpClientFactory;
+    public ChatDbService(IAuthDbService authDbService, IHttpClientFactory httpClientFactory)
     {
-        _configureDb = configureDb;
-        _client = _configureDb.GetFirebaseClient();
         _resourceReader = new ResourceManager("LibBot.Resources.Resource", Assembly.GetExecutingAssembly());
+        _authDbService = authDbService;
+        _httpClientFactory = httpClientFactory;
     }
 
     public async Task CreateItemAsync(ChatDbModel item)
     {
-        await _client.SetAsync(_resourceReader.GetString("Chat_DbName") + '/' + item.ChatId, item);
+        var token = await _authDbService.GetAccessToken();
+        var client = _httpClientFactory.CreateClient("Firebase");
+        var uri = client.BaseAddress + _resourceReader.GetString("Chat_DbName") + '/' + item.ChatId + ".json" + $"?auth={token}";
+        var res = await client.PutAsync(uri, JsonContent.Create(item));
     }
 
     public async Task<ChatDbModel> ReadItemAsync(long chatId)
     {
-        var result = await _client.GetAsync(_resourceReader.GetString("Chat_DbName") + '/' + chatId);
-        var data = result.ResultAs<ChatDbModel>();
+        var token = await _authDbService.GetAccessToken();
+        var client = _httpClientFactory.CreateClient("Firebase");
+        var uri = client.BaseAddress + _resourceReader.GetString("Chat_DbName") + '/' + chatId + ".json" + $"?auth={token}";
+        var responce = await client.GetAsync(uri);
+        var stringResponce = await responce.Content.ReadAsStringAsync();
+        var data = JsonConvert.DeserializeObject<ChatDbModel>(stringResponce);
         return data;
     }
 
     public async Task UpdateItemAsync(ChatDbModel item) 
     {
-        await _client.UpdateAsync(_resourceReader.GetString("Chat_DbName") + '/' + item.ChatId, item);
+        var token = await _authDbService.GetAccessToken();
+        var client = _httpClientFactory.CreateClient("Firebase");
+        var uri = client.BaseAddress + _resourceReader.GetString("Chat_DbName") + '/' + item.ChatId + ".json" + $"?auth={token}";
+        await client.PatchAsync(uri, JsonContent.Create(item));
     }
 
     public async Task DeleteItemAsync(long chatId)
     {
-        await _client.DeleteAsync(_resourceReader.GetString("Chat_DbName") + '/' + chatId);
+        var token = await _authDbService.GetAccessToken();
+        var client = _httpClientFactory.CreateClient("Firebase");
+        var uri = client.BaseAddress + _resourceReader.GetString("Chat_DbName") + '/' + chatId + ".json" + $"?auth={token}";
+        await client.DeleteAsync(uri);
     }
 }
