@@ -15,19 +15,21 @@ public class FeedbackDbService : IFeedbackDbService
     private ResourceManager _resourceReader;
     private readonly IAuthDbService _authDbService;
     private IOptions<DbConfiguration> _dbConfiguration;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    public FeedbackDbService(IAuthDbService authDbService, IOptions<DbConfiguration> dbConfiguration)
+    public FeedbackDbService(IAuthDbService authDbService, IHttpClientFactory httpClientFactory, IOptions<DbConfiguration> dbConfiguration)
     {
         _resourceReader = new ResourceManager("LibBot.Resources.Resource", Assembly.GetExecutingAssembly());
         _dbConfiguration = dbConfiguration;
         _authDbService = authDbService;
+        _httpClientFactory = httpClientFactory;
     }
 
     public async Task CreateItemAsync(UserFeedbackDbModel item)
     {
         var token = await _authDbService.GetAccessToken();
-        using var client = new HttpClient();
-        var uri = _dbConfiguration.Value.BasePath + _resourceReader.GetString("Feedback_DbName") + '/' + item.ChatId + ".json" + $"?auth={token}";
+        var client = _httpClientFactory.CreateClient("Db");
+        var uri = client.BaseAddress + _resourceReader.GetString("Feedback_DbName") + '/' + item.ChatId + ".json" + $"?auth={token}";
         var res = await client.PostAsync(uri, JsonContent.Create(item));
     }
 }

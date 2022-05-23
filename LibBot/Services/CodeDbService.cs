@@ -3,8 +3,6 @@ using LibBot.Services.Interfaces;
 using System.Threading.Tasks;
 using System.Resources;
 using System.Reflection;
-using LibBot.Models.Configurations;
-using Microsoft.Extensions.Options;
 using System.Net.Http;
 using Newtonsoft.Json;
 using System.Net.Http.Json;
@@ -15,27 +13,27 @@ public class CodeDbService:ICodeDbService
 {
     private ResourceManager _resourceReader;
     private readonly IAuthDbService _authDbService;
-    private IOptions<DbConfiguration> _dbConfiguration;
-    public CodeDbService(IAuthDbService authDbService, IOptions<DbConfiguration> dbConfiguration)
+    private readonly IHttpClientFactory _httpClientFactory;
+    public CodeDbService(IAuthDbService authDbService, IHttpClientFactory httpClientFactory)
     {
         _resourceReader = new ResourceManager("LibBot.Resources.Resource", Assembly.GetExecutingAssembly());
-        _dbConfiguration = dbConfiguration;
         _authDbService = authDbService;
+        _httpClientFactory = httpClientFactory;
     }
 
     public async Task CreateItemAsync(CodeDbModel item)
     {
         var token = await _authDbService.GetAccessToken();
-        using var client = new HttpClient();
-        var uri = _dbConfiguration.Value.BasePath + _resourceReader.GetString("Code_DbName") + '/' + item.ChatId + ".json" + $"?auth={token}";
+        var client = _httpClientFactory.CreateClient("Db");
+        var uri = client.BaseAddress + _resourceReader.GetString("Code_DbName") + '/' + item.ChatId + ".json" + $"?auth={token}";
         var res = await client.PutAsync(uri, JsonContent.Create(item));
     }
 
     public async Task<CodeDbModel> ReadItemAsync(long chatId) 
     {
         var token = await _authDbService.GetAccessToken();
-        using var client = new HttpClient();
-        var uri = _dbConfiguration.Value.BasePath + _resourceReader.GetString("Code_DbName") + '/' + chatId + ".json" + $"?auth={token}";
+        var client = _httpClientFactory.CreateClient("Db");
+        var uri = client.BaseAddress + _resourceReader.GetString("Code_DbName") + '/' + chatId + ".json" + $"?auth={token}";
         var responce = await client.GetAsync(uri);
         var stringResponce = await responce.Content.ReadAsStringAsync();
         var data = JsonConvert.DeserializeObject<CodeDbModel>(stringResponce);
@@ -45,16 +43,16 @@ public class CodeDbService:ICodeDbService
     public async Task UpdateItemAsync(CodeDbModel item)
     {
         var token = await _authDbService.GetAccessToken();
-        using var client = new HttpClient();
-        var uri = _dbConfiguration.Value.BasePath + _resourceReader.GetString("Code_DbName") + '/' + item.ChatId + ".json" + $"?auth={token}";
+        var client = _httpClientFactory.CreateClient("Db");
+        var uri = client.BaseAddress + _resourceReader.GetString("Code_DbName") + '/' + item.ChatId + ".json" + $"?auth={token}";
         await client.PatchAsync(uri, JsonContent.Create(item));
     }
 
     public async Task DeleteItemAsync(long chatId)
     {
         var token = await _authDbService.GetAccessToken();
-        using var client = new HttpClient();
-        var uri = _dbConfiguration.Value.BasePath + _resourceReader.GetString("Code_DbName") + '/' + chatId + ".json" + $"?auth={token}";
+        var client = _httpClientFactory.CreateClient("Db");
+        var uri = client.BaseAddress + _resourceReader.GetString("Code_DbName") + '/' + chatId + ".json" + $"?auth={token}";
         await client.DeleteAsync(uri);
     }
 }

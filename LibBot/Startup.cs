@@ -37,6 +37,8 @@ public class Startup
 
 
         services.AddSharePointHttpClient(Configuration);
+        services.AddAuthDbHttpClient(Configuration);
+        services.AddDbHttpClient(Configuration);
         services.AddHttpClient("tgwebhook")
           .AddTypedClient<ITelegramBotClient>(httpClient
               => new TelegramBotClient(_botConfiguration.BotToken, httpClient));

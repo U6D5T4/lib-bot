@@ -1,7 +1,5 @@
 ﻿using LibBot.Models;
-using LibBot.Models.Configurations;
 using LibBot.Services.Interfaces;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -14,28 +12,28 @@ namespace LibBot.Services;
 public class ChatDbService: IChatDbService
 {
     private ResourceManager _resourceReader;
-    private IOptions<DbConfiguration> _dbConfiguration;
     private readonly IAuthDbService _authDbService;
-    public ChatDbService(IAuthDbService authDbService, IOptions<DbConfiguration> dbConfiguration)
+    private readonly IHttpClientFactory _httpClientFactory;
+    public ChatDbService(IAuthDbService authDbService, IHttpClientFactory httpClientFactory)
     {
         _resourceReader = new ResourceManager("LibBot.Resources.Resource", Assembly.GetExecutingAssembly());
-        _dbConfiguration = dbConfiguration;
         _authDbService = authDbService;
+        _httpClientFactory = httpClientFactory;
     }
 
     public async Task CreateItemAsync(ChatDbModel item)
     {
         var token = await _authDbService.GetAccessToken();
-        using var client = new HttpClient();
-        var uri = _dbConfiguration.Value.BasePath + _resourceReader.GetString("Chat_DbName") + '/' + item.ChatId + ".json" + $"?auth={token}";
+        var client = _httpClientFactory.CreateClient("Db");
+        var uri = client.BaseAddress + _resourceReader.GetString("Chat_DbName") + '/' + item.ChatId + ".json" + $"?auth={token}";
         var res = await client.PutAsync(uri, JsonContent.Create(item));
     }
 
     public async Task<ChatDbModel> ReadItemAsync(long chatId)
     {
         var token = await _authDbService.GetAccessToken();
-        using var client = new HttpClient();
-        var uri = _dbConfiguration.Value.BasePath + _resourceReader.GetString("Chat_DbName") + '/' + chatId + ".json" + $"?auth={token}";
+        var client = _httpClientFactory.CreateClient("Db");
+        var uri = client.BaseAddress + _resourceReader.GetString("Chat_DbName") + '/' + chatId + ".json" + $"?auth={token}";
         var responce = await client.GetAsync(uri);
         var stringResponce = await responce.Content.ReadAsStringAsync();
         var data = JsonConvert.DeserializeObject<ChatDbModel>(stringResponce);
@@ -45,16 +43,16 @@ public class ChatDbService: IChatDbService
     public async Task UpdateItemAsync(ChatDbModel item) 
     {
         var token = await _authDbService.GetAccessToken();
-        using var client = new HttpClient();
-        var uri = _dbConfiguration.Value.BasePath + _resourceReader.GetString("Chat_DbName") + '/' + item.ChatId + ".json" + $"?auth={token}";
+        var client = _httpClientFactory.CreateClient("Db");
+        var uri = client.BaseAddress + _resourceReader.GetString("Chat_DbName") + '/' + item.ChatId + ".json" + $"?auth={token}";
         await client.PatchAsync(uri, JsonContent.Create(item));
     }
 
     public async Task DeleteItemAsync(long chatId)
     {
         var token = await _authDbService.GetAccessToken();
-        using var client = new HttpClient();
-        var uri = _dbConfiguration.Value.BasePath + _resourceReader.GetString("Chat_DbName") + '/' + chatId + ".json" + $"?auth={token}";
+        var client = _httpClientFactory.CreateClient("Db");
+        var uri = client.BaseAddress + _resourceReader.GetString("Chat_DbName") + '/' + chatId + ".json" + $"?auth={token}";
         await client.DeleteAsync(uri);
     }
 }

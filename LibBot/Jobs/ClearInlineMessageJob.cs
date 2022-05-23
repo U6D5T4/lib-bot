@@ -44,8 +44,8 @@ class ClearInlineMessageJob : Tokens, IJob
         }
 
         var token = await GetAccessToken();
-        using var client = new HttpClient();
-        var uri = _dbConfiguration.Value.BaseAddress + _resourceReader.GetString("Chat_DbName") + ".json" + $"?auth={token}";
+        var client = _httpClientFactory.CreateClient("Db");
+        var uri = client.BaseAddress + _resourceReader.GetString("Chat_DbName") + ".json" + $"?auth={token}";
         await client.DeleteAsync(uri);
 
         return Task.CompletedTask;
@@ -59,8 +59,8 @@ class ClearInlineMessageJob : Tokens, IJob
     private async Task<List<ChatDbModel>> ReadAllChatsAsync()
     {
         var token = await GetAccessToken();
-        using var client = new HttpClient();
-        var uri = _dbConfiguration.Value.BaseAddress + _resourceReader.GetString("Chat_DbName") + ".json" + $"?auth={token}";
+        var client = _httpClientFactory.CreateClient("Db");
+        var uri = client.BaseAddress + _resourceReader.GetString("Chat_DbName") + ".json" + $"?auth={token}";
         var responce = await client.GetAsync(uri);
         var stringResponce = await responce.Content.ReadAsStringAsync();
         var data = JsonConvert.DeserializeObject<Dictionary<string, ChatDbModel>>(stringResponce);
@@ -75,49 +75,34 @@ class ClearInlineMessageJob : Tokens, IJob
         return chats;
     }
 
-    private async Task UpdateTokens()
+    private async Task GetTokens(object requestData, bool refresh)
     {
-        using var client = new HttpClient();
-        var requestParameter = new AuthDbRefreshRequest() { RefreshToken = RefreshToken };
-        var content = JsonContent.Create(requestParameter);
-        var responce = await client.PostAsync(_dbConfiguration.Value.RefreshAddress, content);
-        var stringResponce = await responce.Content.ReadAsStringAsync();
-        var data = JsonConvert.DeserializeObject<AuthRefreshDbResponce>(stringResponce);
-        Token = data.Id_Token;
-        RefreshToken = data.Refresh_Token;
-        ExpiresIn = data.Expires_In;
-        CreateTokenDate = DateTime.Now;
-    }
-
-    private async Task GetTokens()
-    {
-        using var client = new HttpClient();
-        var requestData = new AuthDbRequest() { Email = _dbConfiguration.Value.Login, Password = _dbConfiguration.Value.Password, ReturnSecureToken = true };
+         var client = _httpClientFactory.CreateClient("Db");
         var content = JsonContent.Create(requestData);
-        var responce = await client.PostAsync(_dbConfiguration.Value.BaseAddress, content);
+        var uri = refresh ? _dbConfiguration.Value.RefreshAddress : client.BaseAddress.ToString();
+        var responce = await client.PostAsync(uri, content);
         var stringResponce = await responce.Content.ReadAsStringAsync();
-        var data = JsonConvert.DeserializeObject<AuthDbResponse>(stringResponce);
-        Token = data.IdToken;
-        RefreshToken = data.RefreshToken;
-        ExpiresIn = data.ExpiresIn;
-        CreateTokenDate = DateTime.Now;
+        var data = JsonConvert.DeserializeObject<DbResponse>(stringResponce);
+        SetDataTokens(data);
     }
 
     private async Task<string> GetAccessToken()
     {
         if (Token is null)
         {
-            await GetTokens();
+            var requestData = new AuthDbRequest() { Email = _dbConfiguration.Value.Login, Password = _dbConfiguration.Value.Password, ReturnSecureToken = true };
+            await GetTokens(requestData, false);
             return Token;
         }
 
-        if (DateTime.Now <= CreateTokenDate.AddSeconds(Convert.ToInt32(ExpiresIn)))
+        if (DateTime.Now <= CreateTokenDate.AddSeconds(Convert.ToInt32(ExpiresIn)).AddMinutes(-1))
         {
             return Token;
         }
         else
         {
-            await UpdateTokens();
+            var requestData = new AuthDbRefreshRequest() { RefreshToken = RefreshToken };
+            await GetTokens(requestData, true);
             return Token;
         }
     }
