@@ -13,14 +13,9 @@ using LibBot.Services.Interfaces;
 
 namespace LibBot.Services;
 
-public class AuthDbService : IAuthDbService
+public class AuthDbService : Tokens, IAuthDbService
 {
     private IOptions<AuthDbConfiguration> _dbConfiguration;
-    private static string Token { get; set; }
-    private static string RefreshToken { get; set; }
-    private static string ExpiresIn { get; set; }
-    private static DateTime CreateTokenDate {get;set;}
-
     public AuthDbService(IOptions<AuthDbConfiguration> dbConfiguration)
     {
         _dbConfiguration = dbConfiguration;

@@ -1,5 +1,4 @@
-﻿using FireSharp.Interfaces;
-using LibBot.Models;
+﻿using LibBot.Models;
 using LibBot.Services.Interfaces;
 using System.Threading.Tasks;
 using System.Resources;
@@ -14,19 +13,14 @@ namespace LibBot.Services;
 
 public class CodeDbService:ICodeDbService
 {
-    private readonly IConfigureDb _configureDb;
-    private readonly IFirebaseClient _client;
     private ResourceManager _resourceReader;
     private readonly IAuthDbService _authDbService;
     private IOptions<DbConfiguration> _dbConfiguration;
-    public CodeDbService(IConfigureDb configureDb, IAuthDbService authDbService, IOptions<DbConfiguration> dbConfiguration)
+    public CodeDbService(IAuthDbService authDbService, IOptions<DbConfiguration> dbConfiguration)
     {
-        _configureDb = configureDb;
-        _client = _configureDb.GetFirebaseClient();
         _resourceReader = new ResourceManager("LibBot.Resources.Resource", Assembly.GetExecutingAssembly());
         _dbConfiguration = dbConfiguration;
         _authDbService = authDbService;
-
     }
 
     public async Task CreateItemAsync(CodeDbModel item)

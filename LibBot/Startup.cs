@@ -48,7 +48,6 @@ public class Startup
         services.AddScoped<ISharePointService, SharePointService>();
         services.AddScoped<IUserDbService, UserDbService>();
         services.AddScoped<ICodeDbService, CodeDbService>();
-        services.AddScoped<IConfigureDb, ConfigureDb>();
         services.AddScoped<IChatDbService, ChatDbService>();
         services.AddScoped<IChatService, ChatService>();
         services.AddScoped<IFileService, FileService>();

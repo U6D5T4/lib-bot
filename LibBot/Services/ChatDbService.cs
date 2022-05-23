@@ -1,5 +1,4 @@
-﻿using FireSharp.Interfaces;
-using LibBot.Models;
+﻿using LibBot.Models;
 using LibBot.Models.Configurations;
 using LibBot.Services.Interfaces;
 using Microsoft.Extensions.Options;
@@ -14,15 +13,11 @@ namespace LibBot.Services;
 
 public class ChatDbService: IChatDbService
 {
-    private readonly IConfigureDb _configureDb;
-    private readonly IFirebaseClient _client;
     private ResourceManager _resourceReader;
     private IOptions<DbConfiguration> _dbConfiguration;
     private readonly IAuthDbService _authDbService;
-    public ChatDbService(IConfigureDb configureDb, IAuthDbService authDbService, IOptions<DbConfiguration> dbConfiguration)
+    public ChatDbService(IAuthDbService authDbService, IOptions<DbConfiguration> dbConfiguration)
     {
-        _configureDb = configureDb;
-        _client = _configureDb.GetFirebaseClient();
         _resourceReader = new ResourceManager("LibBot.Resources.Resource", Assembly.GetExecutingAssembly());
         _dbConfiguration = dbConfiguration;
         _authDbService = authDbService;
