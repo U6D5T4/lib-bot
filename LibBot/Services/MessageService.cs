@@ -19,6 +19,8 @@ public class MessageService : IMessageService
     const string EmojiNewInSquare = "\U0001F193";
     const string EmojiLock = "\U0001F512";
     const string EmojiNew = "\uD83C\uDD95";
+    const string EmojiNext = "\U000027A1";
+    const string EmojPrevious = "\U00002B05";
     private readonly ITelegramBotClient _botClient;
     private ResourceManager _resourceReader;
     public MessageService(ITelegramBotClient botClient)
@@ -185,16 +187,16 @@ public class MessageService : IMessageService
         }
         else if (firstPage)
         {
-            buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Next", callbackData: "Next"));
+            buttons.Add(InlineKeyboardButton.WithCallbackData(text:"Next " + EmojiNext, callbackData: "Next"));
         }
         else if (buttons.Count <= SharePointService.AmountBooks)
         {
-            buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Previous", callbackData: "Previous"));
+            buttons.Add(InlineKeyboardButton.WithCallbackData(text: EmojPrevious + " Previous", callbackData: "Previous"));
         }
         else
         {
-            buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Previous", callbackData: "Previous"));
-            buttons.Add(InlineKeyboardButton.WithCallbackData(text: "Next", callbackData: "Next"));
+            buttons.Add(InlineKeyboardButton.WithCallbackData(text: EmojPrevious + " Previous", callbackData: "Previous"));
+            buttons.Add(InlineKeyboardButton.WithCallbackData(text:"Next " + EmojiNext, callbackData: "Next"));
         }
 
         if (books.Count == SharePointService.AmountBooks + 1)
