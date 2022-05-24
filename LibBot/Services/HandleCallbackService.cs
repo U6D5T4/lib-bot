@@ -128,7 +128,7 @@ public partial class HandleUpdateService
                     books = userBooksAfterYes.Where(book => book.TakenToRead.Value.ToLocalTime().ToShortDateString() == dataAboutBook.TakenToRead.Value.ToShortDateString()).ToList();
                     if (books.Count == 0)
                     {
-                        if (data.CurrentMessagesId.Count == 1)
+                        if (data.CurrentMessagesId.Count <= 1)
                         {
                             await _messageService.EditMessageAfterYesAndNoButtonsAsync(callbackQuery, _resourceReader.GetString("EmptyUserLibrary"));
                         }
