@@ -128,10 +128,16 @@ public partial class HandleUpdateService
                     books = userBooksAfterYes.Where(book => book.TakenToRead.Value.ToLocalTime().ToShortDateString() == dataAboutBook.TakenToRead.Value.ToShortDateString()).ToList();
                     if (books.Count == 0)
                     {
-                        await _messageService.DeleteMessageAsync(data.ChatId, callbackQuery.Message.MessageId);
-                        data.CurrentMessagesId.Remove(callbackQuery.Message.MessageId);
-                        await _chatService.SaveChatInfoAsync(data);
-                        await _messageService.DisplayBookButtons(callbackQuery.Message.Chat.Id, _resourceReader.GetString("EmptyUserLibrary"), books, data.ChatState);
+                        if (data.CurrentMessagesId.Count == 1)
+                        {
+                            await _messageService.EditMessageAfterYesAndNoButtonsAsync(callbackQuery, _resourceReader.GetString("EmptyUserLibrary"));
+                        }
+                        else
+                        {
+                            await _messageService.DeleteMessageAsync(data.ChatId, callbackQuery.Message.MessageId);
+                            data.CurrentMessagesId.Remove(callbackQuery.Message.MessageId);
+                            await _chatService.SaveChatInfoAsync(data);
+                        }
                     }
                     else
                     {
